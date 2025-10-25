@@ -5,17 +5,24 @@ Flask-CORS==4.0.0
 # === AUTOMAÇÃO YOUTUBE ===
 selenium==4.16.0
 
-# === BANCO DE DADOS ===
-# SQLite já vem com Python
-
 # === HARDWARE (RASPBERRY PI) ===
 RPi.GPIO==0.7.1
-# Descomente se usar comunicação serial com aceitador
-# pyserial==3.5
+
+# === GATEWAY DE PAGAMENTO ===
+mercadopago==2.2.1        # SDK oficial do Mercado Pago
+# stone-payments==0.1.0   # Descomente se usar Stone
+# pagseguro-api==0.2.0    # Descomente se usar PagSeguro
 
 # === UTILITÁRIOS ===
-python-dotenv==1.0.0  # Carregar variáveis de .env
-requests==2.31.0      # Requisições HTTP
+python-dotenv==1.0.0
+requests==2.31.0
 
 # === VALIDAÇÃO ===
-jsonschema==4.20.0    # Validar JSON das requisições
+jsonschema==4.20.0
+pydantic==2.5.0           # Validação de dados robusta
+
+# === CRIPTOGRAFIA (para webhooks) ===
+cryptography==41.0.7
+
+# === LOGS ===
+# (logging já vem com Python padrão)
