@@ -1,0 +1,57 @@
+# === PYTHON ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# === AMBIENTE ===
+.env
+.venv
+
+# === BANCO DE DADOS ===
+*.db
+*.sqlite
+*.sqlite3
+
+# === LOGS ===
+logs/
+*.log
+
+# === IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# === SISTEMA ===
+.DS_Store
+Thumbs.db
+
+# === SELENIUM ===
+geckodriver.log
+chromedriver.log
+
+# === TEMPORÁRIOS ===
+*.tmp
+*.bak
+*.cache
