@@ -1,13 +1,24 @@
 """
 Configurações centralizadas do sistema Jukebox
-Carrega variáveis de ambiente e define constantes do projeto
+Suporta múltiplos métodos de pagamento: Dinheiro, Débito, Crédito e PIX
 """
 
 import os
 from pathlib import Path
+from enum import Enum
 
 # Diretório raiz do projeto
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+
+# === ENUMS PARA MÉTODOS DE PAGAMENTO ===
+class PaymentMethod(Enum):
+    """Métodos de pagamento aceitos pelo sistema"""
+    CASH = "cash"           # Dinheiro físico (aceitador de notas)
+    DEBIT = "debit"         # Cartão de débito
+    CREDIT = "credit"       # Cartão de crédito
+    PIX = "pix"             # PIX
+
 
 # === CONFIGURAÇÕES DE HARDWARE ===
 class HardwareConfig:
@@ -21,64 +32,119 @@ class HardwareConfig:
     
     # Tempo mínimo entre pulsos para evitar ruído (milissegundos)
     DEBOUNCE_MS = int(os.getenv('DEBOUNCE_MS', '200'))
+    
+    # Ativar módulo de hardware (True/False)
+    ENABLED = os.getenv('HARDWARE_ENABLED', 'true').lower() == 'true'
+
+
+# === CONFIGURAÇÕES DE PAGAMENTO DIGITAL ===
+class PaymentGatewayConfig:
+    """Configurações do gateway de pagamento (Mercado Pago, Stone, etc.)"""
+    
+    # Provedor do gateway (mercadopago, stone, pagseguro)
+    PROVIDER = os.getenv('PAYMENT_PROVIDER', 'mercadopago')
+    
+    # Credenciais da API
+    API_KEY = os.getenv('PAYMENT_API_KEY', '')
+    ACCESS_TOKEN = os.getenv('PAYMENT_ACCESS_TOKEN', '')
+    
+    # URL de callback para webhooks
+    WEBHOOK_URL = os.getenv('PAYMENT_WEBHOOK_URL', 'https://seu-dominio.com/webhook')
+    
+    # Timeout para requisições (segundos)
+    TIMEOUT = int(os.getenv('PAYMENT_TIMEOUT', '30'))
+    
+    # Ativar pagamento digital (True/False)
+    ENABLED = os.getenv('PAYMENT_DIGITAL_ENABLED', 'true').lower() == 'true'
 
 
 # === CONFIGURAÇÕES DE NEGÓCIO ===
 class BusinessConfig:
     """Regras de negócio da Jukebox"""
     
-    # Preço cobrado por música
+    # Preço base por música
     PRICE_PER_SONG = float(os.getenv('PRICE_PER_SONG', '5.00'))
+    
+    # Taxa adicional para cartão de crédito (percentual)
+    CREDIT_CARD_FEE = float(os.getenv('CREDIT_CARD_FEE', '3.99'))  # 3.99%
+    
+    # Taxa adicional para débito (percentual)
+    DEBIT_CARD_FEE = float(os.getenv('DEBIT_CARD_FEE', '1.99'))  # 1.99%
+    
+    # Taxa para PIX (geralmente zero)
+    PIX_FEE = float(os.getenv('PIX_FEE', '0.00'))
+    
+    # Taxa para dinheiro (zero)
+    CASH_FEE = float(os.getenv('CASH_FEE', '0.00'))
     
     # Limite de músicas na fila de espera
     MAX_QUEUE_SIZE = int(os.getenv('MAX_QUEUE_SIZE', '10'))
     
     # Tempo de inatividade antes de voltar à tela inicial (segundos)
     IDLE_TIMEOUT = int(os.getenv('IDLE_TIMEOUT', '300'))
+    
+    # Métodos de pagamento habilitados (separados por vírgula)
+    ENABLED_PAYMENT_METHODS = os.getenv(
+        'ENABLED_PAYMENT_METHODS', 
+        'cash,debit,credit,pix'
+    ).split(',')
+    
+    @classmethod
+    def calculate_price(cls, payment_method: PaymentMethod) -> float:
+        """Calcula o preço final com base no método de pagamento"""
+        base_price = cls.PRICE_PER_SONG
+        
+        fee_map = {
+            PaymentMethod.CASH: cls.CASH_FEE,
+            PaymentMethod.DEBIT: cls.DEBIT_CARD_FEE,
+            PaymentMethod.CREDIT: cls.CREDIT_CARD_FEE,
+            PaymentMethod.PIX: cls.PIX_FEE
+        }
+        
+        fee_percent = fee_map.get(payment_method, 0.0)
+        return round(base_price * (1 + fee_percent / 100), 2)
 
 
 # === CONFIGURAÇÕES DO FLASK ===
 class FlaskConfig:
     """Configurações do servidor web"""
     
-    # Modo de execução (development, production)
     ENV = os.getenv('FLASK_ENV', 'production')
-    
-    # Chave secreta para sessões (MUDE EM PRODUÇÃO!)
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-CHANGE-THIS')
     
     # Token para autenticar requisições do hardware
     HARDWARE_TOKEN = os.getenv('HARDWARE_TOKEN', 'hardware-token-123')
     
-    # Porta do servidor
-    PORT = int(os.getenv('FLASK_PORT', '5000'))
+    # Token para validar webhooks do gateway
+    WEBHOOK_SECRET = os.getenv('WEBHOOK_SECRET', 'webhook-secret-456')
     
-    # Host (0.0.0.0 permite acesso externo)
+    PORT = int(os.getenv('FLASK_PORT', '5000'))
     HOST = os.getenv('FLASK_HOST', '0.0.0.0')
+    
+    # CORS permitido (para testes locais)
+    CORS_ORIGINS = os.getenv('CORS_ORIGINS', '*')
 
 
 # === CONFIGURAÇÕES DO YOUTUBE ===
 class YouTubeConfig:
     """Configurações do player YouTube com Selenium"""
     
-    # Caminho do ChromeDriver
     CHROME_DRIVER_PATH = os.getenv('CHROME_DRIVER_PATH', '/usr/bin/chromedriver')
-    
-    # Ativar autoplay da próxima música
     AUTOPLAY = os.getenv('YOUTUBE_AUTOPLAY', 'true').lower() == 'true'
-    
-    # Tempo máximo de espera por elementos (segundos)
     WAIT_TIMEOUT = int(os.getenv('SELENIUM_TIMEOUT', '10'))
+    
+    # User-Agent para evitar detecção de bot
+    USER_AGENT = os.getenv(
+        'CHROME_USER_AGENT',
+        'Mozilla/5.0 (X11; Linux armv7l) AppleWebKit/537.36 Chrome/120.0.0.0'
+    )
 
 
 # === CONFIGURAÇÕES DO BANCO DE DADOS ===
 class DatabaseConfig:
     """Configurações do SQLite"""
     
-    # Caminho do arquivo do banco de dados
     DB_PATH = Path(os.getenv('DB_PATH', BASE_DIR / 'src' / 'db' / 'jukebox.db'))
-    
-    # Criar diretório se não existir
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 
@@ -86,14 +152,13 @@ class DatabaseConfig:
 class LogConfig:
     """Configurações de logs do sistema"""
     
-    # Nível de log (DEBUG, INFO, WARNING, ERROR, CRITICAL)
     LEVEL = os.getenv('LOG_LEVEL', 'INFO')
-    
-    # Arquivo de log
     LOG_FILE = Path(os.getenv('LOG_FILE', BASE_DIR / 'logs' / 'jukebox.log'))
-    
-    # Criar diretório de logs se não existir
     LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
     
-    # Formato das mensagens de log
+    # Formato das mensagens
     FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    
+    # Rotação de logs (tamanho máximo 10MB)
+    MAX_BYTES = int(os.getenv('LOG_MAX_BYTES', '10485760'))
+    BACKUP_COUNT = int(os.getenv('LOG_BACKUP_COUNT', '5'))
