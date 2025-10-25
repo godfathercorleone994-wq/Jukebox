@@ -1,0 +1,21 @@
+# === SERVIDOR WEB ===
+Flask==3.0.0
+Flask-CORS==4.0.0
+
+# === AUTOMAÇÃO YOUTUBE ===
+selenium==4.16.0
+
+# === BANCO DE DADOS ===
+# SQLite já vem com Python
+
+# === HARDWARE (RASPBERRY PI) ===
+RPi.GPIO==0.7.1
+# Descomente se usar comunicação serial com aceitador
+# pyserial==3.5
+
+# === UTILITÁRIOS ===
+python-dotenv==1.0.0  # Carregar variáveis de .env
+requests==2.31.0      # Requisições HTTP
+
+# === VALIDAÇÃO ===
+jsonschema==4.20.0    # Validar JSON das requisições
