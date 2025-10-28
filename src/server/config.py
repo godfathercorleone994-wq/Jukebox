@@ -138,6 +138,21 @@ class YouTubeConfig:
         'CHROME_USER_AGENT',
         'Mozilla/5.0 (X11; Linux armv7l) AppleWebKit/537.36 Chrome/120.0.0.0'
     )
+    
+    # Configurações de música idle (quando não há atividade)
+    IDLE_MUSIC_ENABLED = os.getenv('IDLE_MUSIC_ENABLED', 'true').lower() == 'true'
+    IDLE_MUSIC_TIMEOUT = int(os.getenv('IDLE_MUSIC_TIMEOUT', '600'))  # 10 minutos em segundos
+    
+    # Lista de categorias/termos de busca para músicas aleatórias
+    # Focado em música real para evitar outros tipos de conteúdo
+    IDLE_MUSIC_QUERIES = os.getenv(
+        'IDLE_MUSIC_QUERIES',
+        'top hits 2024,best pop songs,rock classics,jazz music,bossa nova,MPB brasileira,'
+        'samba clássico,música internacional,best songs,hit songs'
+    ).split(',')
+    
+    # Habilitar ad-blocking avançado
+    ADBLOCK_ENABLED = os.getenv('ADBLOCK_ENABLED', 'true').lower() == 'true'
 
 
 # === CONFIGURAÇÕES DO BANCO DE DADOS ===

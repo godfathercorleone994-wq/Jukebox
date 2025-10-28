@@ -6,6 +6,8 @@ Sistema embarcado de Jukebox com aceitador de notas e YouTube Music para Raspber
 
 - 💰 **Múltiplos métodos de pagamento**: Dinheiro, PIX, Débito, Crédito
 - 🎵 **Reproduz músicas do YouTube** automaticamente com Selenium
+- 🎧 **Música ambiente automática**: Toca músicas aleatórias a cada 10 minutos quando não há atividade
+- 🚫 **Bloqueio de anúncios**: Sistema avançado de ad-blocking integrado
 - 📱 **Interface touchscreen responsiva** com design moderno
 - 💾 **Banco de dados SQLite** para logs, transações e histórico
 - 🔒 **API REST completa** protegida por token
@@ -116,6 +118,9 @@ Jukebox-Pi-Money/
 - ✅ Controle de volume e pausa/play
 - ✅ Detecção e skip de anúncios
 - ✅ Extração de metadados
+- ✅ **Sistema de música idle** - Reproduz músicas aleatórias a cada 10 minutos quando não há atividade
+- ✅ **Ad-blocking avançado** - Bloqueio inteligente de anúncios com múltiplas técnicas
+- ✅ Categorias personalizáveis de música para modo idle
 
 ### Frontend
 - ✅ Interface responsiva touchscreen
