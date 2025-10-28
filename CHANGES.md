@@ -262,11 +262,11 @@ cd Jukebox
 
 ## 📚 Documentação
 
-### Arquivos de Documentação
-1. **README.md** - Visão geral com seções PC/Linux
-2. **PC-LINUX.md** - Guia completo (8500+ palavras)
-3. **CHANGES.md** - Este arquivo (resumo técnico)
-4. **Comentários no código** - Funções documentadas
+### Files Modified:
+1. `src/server/static/app.js` - Added keyboard navigation (195 lines added)
+2. `src/server/static/style.css` - Added keyboard styles (70 lines added)
+3. `src/server/static/index.html` - Added keyboard hints panel (15 lines added)
+4. `README.md` - Updated with PC/Linux info (80 lines modified)
 
 ### Cobertura
 - ✅ Instalação
@@ -278,7 +278,9 @@ cd Jukebox
 
 ## 🎉 Conclusão
 
-As alterações implementadas transformam o Jukebox em uma aplicação verdadeiramente multiplataforma:
+As alterações implementadas transformam o Jukebox em uma aplicação verdadeiramente multiplataforma.
+
+### Principais Conquistas:
 
 1. **Funciona em qualquer Linux** - não apenas Raspberry Pi
 2. **Navegação por teclado completa** - não requer touchscreen ou mouse
@@ -287,7 +289,9 @@ As alterações implementadas transformam o Jukebox em uma aplicação verdadeir
 5. **Totalmente testado** - 12 testes automatizados passando
 6. **Mantém compatibilidade** - Raspberry Pi continua funcionando perfeitamente
 
-O sistema agora atende perfeitamente ao requisito de "rodar diretamente pelo PC, inclusive PC normal sem ser Raspberry Pi, um PC com Linux", e possui "sistema em que se não tiver touchscreen possa usar o teclado físico para mexer nas funcionalidades sem precisar de mouse".
+### Requisitos Atendidos:
+
+O sistema agora atende perfeitamente ao requisito de "rodar diretamente pelo PC, inclusive PC normal sem ser Raspberry Pi, um PC com Linux". Além disso, possui "sistema em que se não tiver touchscreen possa usar o teclado físico para mexer nas funcionalidades sem precisar de mouse".
 
 ---
 
