@@ -17,10 +17,11 @@ const YoutubePlayer = (function() {
     
     // Player instance
     let player = null;
+    let isInitializing = false;
     
-    // Callbacks for events
-    let readyCallback = null;
-    let stateChangeCallback = null;
+    // Callbacks arrays to support multiple listeners
+    const readyCallbacks = [];
+    const stateChangeCallbacks = [];
     
     // Player states mapping
     const PlayerState = {
@@ -53,30 +54,22 @@ const YoutubePlayer = (function() {
                 return;
             }
             
-            // Check if script is already being loaded
-            if (window.onYouTubeIframeAPIReady) {
-                // Wait for existing load to complete
-                const checkInterval = setInterval(() => {
-                    if (window.YT && window.YT.Player) {
-                        clearInterval(checkInterval);
-                        resolve();
-                    }
-                }, 100);
-                return;
-            }
-            
             // Set up the callback for when API is ready
-            window.onYouTubeIframeAPIReady = () => {
+            const originalCallback = window.onYouTubeIframeAPIReady;
+            window.onYouTubeIframeAPIReady = function() {
+                if (originalCallback) originalCallback();
                 resolve();
             };
             
-            // Load the IFrame API script
-            const tag = document.createElement('script');
-            tag.src = 'https://www.youtube.com/iframe_api';
-            tag.onerror = () => reject(new Error('Failed to load YouTube IFrame API'));
-            
-            const firstScriptTag = document.getElementsByTagName('script')[0];
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            // Load the IFrame API script if not already loading
+            if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+                const tag = document.createElement('script');
+                tag.src = 'https://www.youtube.com/iframe_api';
+                tag.onerror = () => reject(new Error('Failed to load YouTube IFrame API'));
+                
+                const firstScriptTag = document.getElementsByTagName('script')[0];
+                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            }
         });
     }
     
@@ -84,6 +77,12 @@ const YoutubePlayer = (function() {
      * Initialize the player
      */
     function initPlayer() {
+        if (player || isInitializing) {
+            return Promise.resolve();
+        }
+        
+        isInitializing = true;
+        
         return loadYouTubeAPI().then(() => {
             // Find or create the player container
             let container = document.getElementById('player-placeholder');
@@ -114,6 +113,12 @@ const YoutubePlayer = (function() {
                     onError: onPlayerError
                 }
             });
+            
+            isInitializing = false;
+        }).catch(error => {
+            isInitializing = false;
+            console.error('Failed to initialize player:', error);
+            throw error;
         });
     }
     
@@ -122,9 +127,13 @@ const YoutubePlayer = (function() {
      */
     function onPlayerReady(event) {
         console.log('YouTube Player is ready');
-        if (readyCallback) {
-            readyCallback(event);
-        }
+        readyCallbacks.forEach(cb => {
+            try {
+                cb(event);
+            } catch (error) {
+                console.error('Error in ready callback:', error);
+            }
+        });
     }
     
     /**
@@ -134,9 +143,13 @@ const YoutubePlayer = (function() {
         const stateName = StateNames[event.data] || 'UNKNOWN';
         console.log('Player state changed to:', stateName);
         
-        if (stateChangeCallback) {
-            stateChangeCallback(stateName, event.data);
-        }
+        stateChangeCallbacks.forEach(cb => {
+            try {
+                cb(stateName, event.data);
+            } catch (error) {
+                console.error('Error in state change callback:', error);
+            }
+        });
     }
     
     /**
@@ -156,27 +169,47 @@ const YoutubePlayer = (function() {
         const message = errorMessages[event.data] || 'Unknown error';
         console.error('Error details:', message);
         
-        if (stateChangeCallback) {
-            stateChangeCallback('ERROR', event.data, message);
-        }
+        stateChangeCallbacks.forEach(cb => {
+            try {
+                cb('ERROR', event.data, message);
+            } catch (error) {
+                console.error('Error in error callback:', error);
+            }
+        });
     }
     
     // Public API
     return {
         /**
-         * Set callback for when player is ready
+         * Register callback for when player is ready
          * @param {Function} callback - Function to call when ready
          */
         onReady(callback) {
-            readyCallback = callback;
+            if (typeof callback !== 'function') {
+                console.error('onReady expects a function');
+                return;
+            }
+            if (!readyCallbacks.includes(callback)) {
+                readyCallbacks.push(callback);
+            }
+            // Initialize player if not already done
+            if (!player && !isInitializing) {
+                initPlayer();
+            }
         },
         
         /**
-         * Set callback for state changes
+         * Register callback for state changes
          * @param {Function} callback - Function to call on state change (stateName, stateCode)
          */
         onStateChange(callback) {
-            stateChangeCallback = callback;
+            if (typeof callback !== 'function') {
+                console.error('onStateChange expects a function');
+                return;
+            }
+            if (!stateChangeCallbacks.includes(callback)) {
+                stateChangeCallbacks.push(callback);
+            }
         },
         
         /**
@@ -185,7 +218,12 @@ const YoutubePlayer = (function() {
          */
         playVideoById(videoId) {
             if (!player) {
-                console.error('Player not initialized');
+                console.warn('Player not initialized yet, initializing now...');
+                initPlayer().then(() => {
+                    if (player) {
+                        this.playVideoById(videoId);
+                    }
+                });
                 return;
             }
             
@@ -263,109 +301,17 @@ const YoutubePlayer = (function() {
     };
 })();
 
-// Store callbacks in arrays to support multiple listeners
-YoutubePlayer._readyCallbacks = [];
-YoutubePlayer._stateChangeCallbacks = [];
-
-// Wrap the original onReady to support multiple callbacks
-const originalOnReady = YoutubePlayer.onReady;
-YoutubePlayer.onReady = function(callback) {
-    if (!YoutubePlayer._readyCallbacks.includes(callback)) {
-        YoutubePlayer._readyCallbacks.push(callback);
-    }
-};
-
-// Wrap the original onStateChange to support multiple callbacks
-const originalOnStateChange = YoutubePlayer.onStateChange;
-YoutubePlayer.onStateChange = function(callback) {
-    if (!YoutubePlayer._stateChangeCallbacks.includes(callback)) {
-        YoutubePlayer._stateChangeCallbacks.push(callback);
-    }
-};
-
-// Auto-initialize the player when DOM is ready
+// Auto-initialize when DOM is ready (just loads the API, actual player creation happens on demand)
 (function() {
     function init() {
-        // Load the YouTube IFrame API
+        // Pre-load the YouTube API script
         if (!window.YT || !window.YT.Player) {
-            // Set up callback for when API loads
-            const originalCallback = window.onYouTubeIframeAPIReady;
-            window.onYouTubeIframeAPIReady = function() {
-                if (originalCallback) originalCallback();
-                initializePlayer();
-            };
-            
-            // Load the script if not already loaded
             if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
                 const tag = document.createElement('script');
                 tag.src = 'https://www.youtube.com/iframe_api';
                 const firstScriptTag = document.getElementsByTagName('script')[0];
                 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
             }
-        } else {
-            // API already loaded
-            initializePlayer();
-        }
-    }
-    
-    function initializePlayer() {
-        // Create hidden container if it doesn't exist
-        let container = document.getElementById('player-placeholder');
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'player-placeholder';
-            container.style.display = 'none';
-            document.body.appendChild(container);
-        }
-        
-        // Create the player (will trigger onReady callback)
-        try {
-            new YT.Player('player-placeholder', {
-                height: '1',
-                width: '1',
-                playerVars: {
-                    autoplay: 0,
-                    controls: 0,
-                    disablekb: 1,
-                    fs: 0,
-                    modestbranding: 1,
-                    playsinline: 1,
-                    rel: 0,
-                    enablejsapi: 1
-                },
-                events: {
-                    onReady: function(event) {
-                        console.log('YouTube Player is ready');
-                        YoutubePlayer._readyCallbacks.forEach(cb => cb(event));
-                    },
-                    onStateChange: function(event) {
-                        const StateNames = {
-                            '-1': 'UNSTARTED',
-                            '0': 'ENDED',
-                            '1': 'PLAYING',
-                            '2': 'PAUSED',
-                            '3': 'BUFFERING',
-                            '5': 'CUED'
-                        };
-                        const stateName = StateNames[event.data] || 'UNKNOWN';
-                        YoutubePlayer._stateChangeCallbacks.forEach(cb => cb(stateName, event.data));
-                    },
-                    onError: function(event) {
-                        console.error('YouTube Player error:', event.data);
-                        const errorMessages = {
-                            2: 'Invalid video ID',
-                            5: 'HTML5 player error',
-                            100: 'Video not found or private',
-                            101: 'Video not allowed to be played in embedded players',
-                            150: 'Video not allowed to be played in embedded players'
-                        };
-                        const message = errorMessages[event.data] || 'Unknown error';
-                        YoutubePlayer._stateChangeCallbacks.forEach(cb => cb('ERROR', event.data, message));
-                    }
-                }
-            });
-        } catch (error) {
-            console.error('Failed to initialize YouTube Player:', error);
         }
     }
     
