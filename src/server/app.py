@@ -4,11 +4,17 @@ API REST para pagamentos, músicas e hardware
 """
 
 import os
+import sys
 import logging
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
+
+# Adiciona diretório raiz ao path
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(ROOT_DIR))
 
 # Carrega variáveis de ambiente
 load_dotenv()
