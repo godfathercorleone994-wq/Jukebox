@@ -15,7 +15,11 @@ Para compilar o APK, você precisará de:
    java -version
    ```
 
-2. **Android SDK** (opcional, o Gradle baixará automaticamente se necessário)
+2. **Conexão com internet** - O Gradle precisará baixar o Android SDK e dependências
+
+3. **Android SDK** (opcional, o Gradle baixará automaticamente se necessário)
+
+⚠️ **Nota**: Este build deve ser feito em um ambiente local com acesso à internet, pois requer download de componentes do Android SDK do repositório Maven do Google.
 
 ## 🚀 Como Compilar o APK
 
