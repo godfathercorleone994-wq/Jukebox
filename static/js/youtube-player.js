@@ -221,7 +221,7 @@ const YoutubePlayer = (function() {
                 console.warn('Player not initialized yet, initializing now...');
                 initPlayer().then(() => {
                     if (player) {
-                        this.playVideoById(videoId);
+                        YoutubePlayer.playVideoById(videoId);
                     }
                 });
                 return;
