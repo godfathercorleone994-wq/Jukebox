@@ -23,7 +23,7 @@ if requirements_file.exists():
 
 setup(
     name="jukebox-pi-money",
-    version="2.2.0",
+    version="2.3.0",
     author="godfathercorleone994",
     author_email="godfathercorleone994@gmail.com",
     description="Sistema embarcado de Jukebox com aceitador de notas e YouTube Music",

@@ -53,9 +53,46 @@ Sistema embarcado de Jukebox com aceitador de notas e YouTube Music para Raspber
 
 📖 **Veja o guia completo**: [PC-LINUX.md](PC-LINUX.md)
 
-### Opção 3: Executável Standalone (Sem Python)
+### Opção 3: Instalador Profissional (Para Usuários Finais)
 
-**✨ Novo!** Crie executáveis standalone que funcionam sem instalar Python:
+**✨ Novo!** Instaladores profissionais com configuração automática:
+
+#### Linux - Instalador Debian (.deb)
+```bash
+# Baixar do GitHub Releases
+wget https://github.com/godfathercorleone994-wq/Jukebox/releases/latest/download/jukebox-pi-money_2.3.0_amd64.deb
+
+# Instalar
+sudo dpkg -i jukebox-pi-money_2.3.0_amd64.deb
+
+# Configurar
+sudo nano /etc/jukebox/.env
+
+# Executar
+jukebox
+```
+
+#### Windows - Instalador (.exe)
+```
+1. Baixe jukebox-setup-windows-x64.exe do GitHub Releases
+2. Execute o instalador
+3. Siga o assistente de configuração
+4. Use o atalho criado no Desktop ou Menu Iniciar
+```
+
+Vantagens dos Instaladores:
+- ✅ **Instalação profissional** com um clique/comando
+- ✅ **Configuração guiada** durante a instalação
+- ✅ **Atalhos automáticos** no menu do sistema
+- ✅ **Fácil desinstalação** via gerenciador de pacotes
+- ✅ **Não requer Python** instalado
+- ✅ **Ideal para usuários finais** sem conhecimento técnico
+
+📖 **Guia completo**: [INSTALLER.md](INSTALLER.md)
+
+### Opção 4: Executável Standalone (Sem Python)
+
+**Alternativa portátil** - funciona sem instalar:
 
 #### Linux
 ```bash
@@ -85,6 +122,32 @@ Características:
 📖 **Guia completo de build**: [BUILD.md](BUILD.md)
 
 ## 🛠️ Instalação Rápida
+
+### Para Usuários Finais (Mais Fácil)
+
+#### 🐧 Linux (Ubuntu/Debian)
+```bash
+# Baixe e instale o pacote .deb
+wget https://github.com/godfathercorleone994-wq/Jukebox/releases/latest/download/jukebox-pi-money_2.3.0_amd64.deb
+sudo dpkg -i jukebox-pi-money_2.3.0_amd64.deb
+
+# Configure
+sudo nano /etc/jukebox/.env
+
+# Execute
+jukebox
+
+# Acesse: http://localhost:5000
+```
+
+#### 🪟 Windows
+1. Baixe `jukebox-setup-windows-x64.exe` do [GitHub Releases](https://github.com/godfathercorleone994-wq/Jukebox/releases/latest)
+2. Execute o instalador
+3. Siga o assistente
+4. Use o atalho no Desktop ou Menu Iniciar
+5. Acesse: http://localhost:5000
+
+📖 **Guia completo**: [INSTALLER.md](INSTALLER.md)
 
 ### Para Raspberry Pi (Produção)
 
@@ -123,7 +186,7 @@ O script `start-pc.sh` automaticamente:
 
 📖 **Guia completo para PC**: [PC-LINUX.md](PC-LINUX.md)
 
-### Opção 4: Testar no Navegador (Sem Instalação)
+### Opção 5: Testar no Navegador (Sem Instalação)
 
 🌐 **Teste online sem instalar nada!**
 
@@ -411,8 +474,15 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 
 ## 🌟 Novidades
 
-### v2.3 - Executáveis Standalone para Linux e Windows
-- 📦 **Novo!** Build de executáveis standalone sem necessidade de Python
+### v2.3 - Instaladores Profissionais e Executáveis Standalone
+- 📦 **Novo!** Instaladores profissionais para Linux (.deb) e Windows (.exe)
+- ✨ **Instalação com um clique/comando** - configuração automática
+- 🎯 **Atalhos automáticos** no menu do sistema e desktop
+- 🔧 **Assistente de configuração** integrado no instalador Windows
+- 🐧 **Pacote Debian** completo com scripts de pós-instalação
+- 🪟 **Instalador Inno Setup** com interface gráfica profissional
+- 📖 **Documentação completa** de instaladores ([INSTALLER.md](INSTALLER.md))
+- 🚀 **Build de executáveis** standalone sem necessidade de Python
 - 🐧 Suporte completo para Linux (qualquer distribuição x64)
 - 🪟 Suporte completo para Windows (7/8/10/11 x64)
 - 🚀 Scripts automatizados de build (`build-linux.sh` e `build-windows.bat`)
@@ -460,7 +530,8 @@ Contribuições são bem-vindas! Por favor:
 - 🐛 Issues: [GitHub Issues](https://github.com/godfathercorleone994-wq/Jukebox/issues)
 - 🌐 Demo Online: [GitHub Pages](https://godfathercorleone994-wq.github.io/Jukebox/)
 - 📖 Docs: 
-  - [BUILD.md](BUILD.md) - **Novo!** Criação de executáveis Linux/Windows
+  - [INSTALLER.md](INSTALLER.md) - **Novo!** Instaladores profissionais para usuários finais
+  - [BUILD.md](BUILD.md) - Criação de executáveis Linux/Windows
   - [DEPLOY.md](DEPLOY.md) - Deploy em Raspberry Pi
   - [PC-LINUX.md](PC-LINUX.md) - Uso em PC/Linux
   - [GITHUB_PAGES.md](GITHUB_PAGES.md) - Testes no navegador

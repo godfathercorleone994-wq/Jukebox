@@ -1,4 +1,4 @@
-name: Build Executables
+name: Build Executables and Installers
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-linux:
-    name: Build Linux Executable
+    name: Build Linux Executable and Installer
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -22,6 +22,11 @@ jobs:
       with:
         python-version: '3.11'
     
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y dpkg fakeroot
+    
     - name: Build Linux executable
       run: |
         chmod +x build-linux.sh
@@ -34,17 +39,24 @@ jobs:
         cd ..
         cp env.example dist/
     
-    - name: Upload Linux artifact
+    - name: Build Linux installer (.deb)
+      run: |
+        chmod +x build-linux-installer.sh
+        ./build-linux-installer.sh
+    
+    - name: Upload Linux artifacts
       uses: actions/upload-artifact@v4
       with:
         name: jukebox-linux-x64
         path: |
           jukebox-linux-x64.tar.gz
+          installers/jukebox-pi-money_2.3.0_amd64.deb
           dist/env.example
           QUICKSTART_EXECUTABLE.md
+          INSTALLER.md
   
   build-windows:
-    name: Build Windows Executable
+    name: Build Windows Executable and Installer
     runs-on: windows-latest
     permissions:
       contents: read
@@ -58,6 +70,10 @@ jobs:
       with:
         python-version: '3.11'
     
+    - name: Install Inno Setup
+      run: |
+        choco install innosetup -y
+        
     - name: Build Windows executable
       run: |
         build-windows.bat
@@ -69,14 +85,20 @@ jobs:
         cd ..
         Copy-Item env.example dist/
     
-    - name: Upload Windows artifact
+    - name: Build Windows installer
+      run: |
+        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer-windows.iss
+    
+    - name: Upload Windows artifacts
       uses: actions/upload-artifact@v4
       with:
         name: jukebox-windows-x64
         path: |
           jukebox-windows-x64.zip
+          installers/jukebox-setup-windows-x64.exe
           dist/env.example
           QUICKSTART_EXECUTABLE.md
+          INSTALLER.md
   
   release:
     name: Create Release
@@ -107,25 +129,64 @@ jobs:
       with:
         files: |
           artifacts-linux/jukebox-linux-x64.tar.gz
+          artifacts-linux/jukebox-pi-money_2.3.0_amd64.deb
           artifacts-windows/jukebox-windows-x64.zip
+          artifacts-windows/jukebox-setup-windows-x64.exe
           artifacts-linux/env.example
           artifacts-linux/QUICKSTART_EXECUTABLE.md
+          artifacts-linux/INSTALLER.md
         body: |
-          ## 🎵 Jukebox Executáveis Standalone
+          ## 🎵 Jukebox Pi Money - Release v2.3.0
           
-          ### 📦 Downloads
+          Sistema embarcado de Jukebox com aceitador de notas e YouTube Music.
           
-          #### Linux (x86_64)
-          - **jukebox-linux-x64.tar.gz** - Executável para Linux
-          - Compatível com qualquer distribuição Linux moderna
-          - Não requer Python instalado
+          ### 📦 Downloads Disponíveis
           
-          #### Windows (x86_64)
-          - **jukebox-windows-x64.zip** - Executável para Windows
-          - Compatível com Windows 7/8/10/11
-          - Não requer Python instalado
+          #### 🐧 Linux (x86_64)
+          
+          **Opção 1: Instalador Debian (.deb)** - ⭐ Recomendado
+          - **jukebox-pi-money_2.3.0_amd64.deb** - Instalador para Ubuntu/Debian
+          - Instalação profissional com um comando
+          - Cria atalhos automaticamente
+          - Configuração automática
+          - Fácil de desinstalar
+          
+          **Opção 2: Executável Standalone (.tar.gz)**
+          - **jukebox-linux-x64.tar.gz** - Executável portátil
+          - Não requer instalação
+          - Bom para testes rápidos
+          
+          #### 🪟 Windows (x86_64)
+          
+          **Opção 1: Instalador (.exe)** - ⭐ Recomendado
+          - **jukebox-setup-windows-x64.exe** - Instalador para Windows
+          - Interface gráfica de instalação
+          - Cria atalhos no Desktop e Menu Iniciar
+          - Configuração guiada
+          - Desinstalação pelo Painel de Controle
+          
+          **Opção 2: Executável Standalone (.zip)**
+          - **jukebox-windows-x64.zip** - Executável portátil
+          - Não requer instalação
+          - Bom para testes rápidos
           
           ### 🚀 Como usar
+          
+          #### Com Instalador (Recomendado)
+          
+          **Linux:**
+          ```bash
+          sudo dpkg -i jukebox-pi-money_2.3.0_amd64.deb
+          sudo nano /etc/jukebox/.env  # Configure
+          jukebox  # Execute
+          ```
+          
+          **Windows:**
+          1. Execute `jukebox-setup-windows-x64.exe`
+          2. Siga o assistente de instalação
+          3. Use o atalho criado no Desktop
+          
+          #### Com Executável Standalone
           
           1. Baixe o arquivo para sua plataforma
           2. Extraia o arquivo
@@ -133,17 +194,39 @@ jobs:
           4. Execute o jukebox
           5. Acesse http://localhost:5000
           
-          Veja o **QUICKSTART_EXECUTABLE.md** incluído para instruções detalhadas.
+          ### 📖 Documentação Completa
           
-          ### 📖 Documentação
+          - **INSTALLER.md** - Guia completo de instaladores (incluído no download)
+          - **QUICKSTART_EXECUTABLE.md** - Guia rápido para executáveis
+          - **env.example** - Exemplo de configuração
+          - [README.md](https://github.com/godfathercorleone994-wq/Jukebox/blob/main/README.md) - Documentação principal
+          - [BUILD.md](https://github.com/godfathercorleone994-wq/Jukebox/blob/main/BUILD.md) - Como construir
+          - [API.md](https://github.com/godfathercorleone994-wq/Jukebox/blob/main/API.md) - Documentação da API
           
-          - [README.md](https://github.com/godfathercorleone994-wq/Jukebox/blob/main/README.md)
-          - [BUILD.md](https://github.com/godfathercorleone994-wq/Jukebox/blob/main/BUILD.md)
-          - [QUICKSTART_EXECUTABLE.md](https://github.com/godfathercorleone994-wq/Jukebox/blob/main/QUICKSTART_EXECUTABLE.md)
+          ### ✨ Características
           
-          ### 🌐 Testar Online
+          - 💰 Múltiplos métodos de pagamento (Dinheiro, PIX, Débito, Crédito)
+          - 🎵 Reproduz músicas do YouTube automaticamente
+          - 🎧 Música ambiente automática quando em espera
+          - 🚫 Bloqueio de anúncios integrado
+          - ⌨️ Navegação completa por teclado
+          - 🔐 Sistema de código de operador
+          - 📱 Interface web responsiva e moderna
           
-          Prefere testar sem instalar? Acesse: https://godfathercorleone994-wq.github.io/Jukebox/
+          ### 🌐 Testar Online (Sem Instalar)
+          
+          Prefere testar sem instalar nada?
+          Acesse a demo online: https://godfathercorleone994-wq.github.io/Jukebox/
+          
+          ### 🆘 Suporte
+          
+          - 📧 Email: godfathercorleone994@gmail.com
+          - 🐛 Issues: https://github.com/godfathercorleone994-wq/Jukebox/issues
+          - 📖 Docs: https://github.com/godfathercorleone994-wq/Jukebox
+          
+          ---
+          
+          **Desenvolvido com ❤️ para a comunidade**
         draft: false
         prerelease: false
       env:
