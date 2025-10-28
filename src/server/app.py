@@ -22,13 +22,21 @@ load_dotenv()
 # Importa módulos do projeto
 from src.server.config import (
     FlaskConfig, BusinessConfig, PaymentMethod,
-    PaymentGatewayConfig, LogConfig, AdminConfig
+    PaymentGatewayConfig, LogConfig, AdminConfig, YouTubeConfig
 )
 from src.db import Database, Transaction, CreditBalance, MusicQueue
 from src.hardware import BillAcceptor
-from src.youtube import YouTubePlayer, IdleMusicManager
 from src.payments import PaymentStatus
 from src.payments.mercadopago_gateway import create_gateway
+
+# Importação opcional do YouTube player (para compatibilidade com código antigo)
+try:
+    from src.youtube import YouTubePlayer, IdleMusicManager
+except ImportError:
+    YouTubePlayer = None
+    IdleMusicManager = None
+    logger = logging.getLogger(__name__)
+    logger.warning("YouTube modules não disponíveis - usando player iframe no frontend")
 
 # Configuração de logging
 os.makedirs(LogConfig.LOG_FILE.parent, exist_ok=True)
