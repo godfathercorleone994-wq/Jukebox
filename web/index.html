@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube IFrame Player Demo - Jukebox</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .status-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 16px;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #1565c0;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .info-box li {
+            margin-bottom: 4px;
+        }
+
+        /* Hidden player div */
+        #player {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 YouTube IFrame Player</h1>
+        <p class="subtitle">Audio-only playback demo for Jukebox</p>
+
+        <div class="input-group">
+            <label for="youtube-url">YouTube URL or Video ID:</label>
+            <input 
+                type="text" 
+                id="youtube-url" 
+                placeholder="e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ or dQw4w9WgXcQ"
+                value="">
+        </div>
+
+        <div class="button-group">
+            <button class="btn-primary" onclick="playVideo()">▶️ Play</button>
+            <button class="btn-secondary" onclick="pauseVideo()">⏸️ Pause</button>
+            <button class="btn-danger" onclick="stopVideo()">⏹️ Stop</button>
+        </div>
+
+        <div class="status">
+            <div class="status-item">
+                <span class="status-label">Player State:</span>
+                <span class="status-value" id="player-state">Not Ready</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Current Video:</span>
+                <span class="status-value" id="current-video">None</span>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <strong>ℹ️ How it works:</strong>
+            <ul>
+                <li>Paste a YouTube URL or video ID above</li>
+                <li>Click Play to start audio playback</li>
+                <li>The player is hidden (audio-only mode)</li>
+                <li>Your browser connects directly to YouTube</li>
+                <li>Compliant with YouTube Terms of Service</li>
+            </ul>
+        </div>
+
+        <!-- Hidden div for YouTube player -->
+        <div id="player"></div>
+    </div>
+
+    <!-- Load the external YouTube player module -->
+    <script src="../static/js/youtube-player.js"></script>
+
+    <script>
+        // Parse YouTube URL/ID and extract video ID
+        function extractVideoId(input) {
+            input = input.trim();
+            
+            // If it's already just an ID (11 characters, alphanumeric and -_)
+            if (/^[a-zA-Z0-9_-]{11}$/.test(input)) {
+                return input;
+            }
+            
+            // Try to parse as URL
+            try {
+                const url = new URL(input);
+                
+                // Standard youtube.com/watch?v=VIDEO_ID
+                if (url.hostname.includes('youtube.com')) {
+                    const videoId = url.searchParams.get('v');
+                    if (videoId) return videoId;
+                }
+                
+                // Short form youtu.be/VIDEO_ID
+                if (url.hostname.includes('youtu.be')) {
+                    const videoId = url.pathname.slice(1);
+                    if (videoId) return videoId;
+                }
+            } catch (e) {
+                // Not a valid URL, might still be a video ID
+            }
+            
+            // Try to extract ID from various formats
+            const patterns = [
+                /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+                /^([a-zA-Z0-9_-]{11})$/
+            ];
+            
+            for (const pattern of patterns) {
+                const match = input.match(pattern);
+                if (match && match[1]) {
+                    return match[1];
+                }
+            }
+            
+            return null;
+        }
+
+        // Update UI with player state
+        function updatePlayerState(state) {
+            const stateMap = {
+                '-1': 'Unstarted',
+                '0': 'Ended',
+                '1': 'Playing',
+                '2': 'Paused',
+                '3': 'Buffering',
+                '5': 'Video Cued'
+            };
+            document.getElementById('player-state').textContent = stateMap[state] || 'Unknown';
+        }
+
+        // Initialize player when ready
+        window.onYouTubePlayerReady = function() {
+            console.log('YouTube Player is ready!');
+            updatePlayerState('-1');
+        };
+
+        // Handle state changes
+        window.onYouTubePlayerStateChange = function(state) {
+            console.log('Player state changed:', state);
+            updatePlayerState(state.toString());
+        };
+
+        // Play video from input
+        function playVideo() {
+            const input = document.getElementById('youtube-url').value;
+            const videoId = extractVideoId(input);
+            
+            if (!videoId) {
+                alert('Please enter a valid YouTube URL or video ID');
+                return;
+            }
+            
+            // Update UI
+            document.getElementById('current-video').textContent = videoId;
+            
+            // Call the player function
+            if (window.YouTubePlayer && window.YouTubePlayer.playVideoById) {
+                window.YouTubePlayer.playVideoById(videoId);
+            } else {
+                alert('YouTube Player is not ready yet. Please wait a moment and try again.');
+            }
+        }
+
+        // Pause current video
+        function pauseVideo() {
+            if (window.YouTubePlayer && window.YouTubePlayer.pause) {
+                window.YouTubePlayer.pause();
+            }
+        }
+
+        // Stop current video
+        function stopVideo() {
+            if (window.YouTubePlayer && window.YouTubePlayer.stop) {
+                window.YouTubePlayer.stop();
+                document.getElementById('current-video').textContent = 'None';
+                updatePlayerState('-1');
+            }
+        }
+
+        // Handle Enter key in input
+        document.getElementById('youtube-url').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                playVideo();
+            }
+        });
+    </script>
+</body>
+</html>
