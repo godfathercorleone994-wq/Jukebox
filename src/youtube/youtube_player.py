@@ -169,9 +169,14 @@ class YouTubePlayer:
             time.sleep(3)
             
             self._skip_ad_if_present()
+            
+            # Se reprodução de vídeo está desabilitada, oculta o vídeo
+            if not self.config.VIDEO_PLAYBACK_ENABLED:
+                self._hide_video_player()
+            
             self.current_video_id = video_id
             
-            logger.info(f"Reproduzindo vídeo: {video_id}")
+            logger.info(f"Reproduzindo vídeo: {video_id} (vídeo {'visível' if self.config.VIDEO_PLAYBACK_ENABLED else 'oculto'})")
             return True
             
         except Exception as e:
@@ -253,6 +258,40 @@ class YouTubePlayer:
             logger.info("Script de ad-blocking injetado")
         except Exception as e:
             logger.debug(f"Erro ao injetar script de adblock: {e}")
+    
+    def _hide_video_player(self):
+        """Oculta o player de vídeo mas mantém o áudio"""
+        if not self.driver:
+            return
+        
+        hide_video_js = """
+        // Oculta o player de vídeo mas mantém o áudio
+        (function() {
+            const player = document.querySelector('#player-container');
+            if (player) {
+                player.style.display = 'none';
+            }
+            
+            // Oculta também o container de vídeo
+            const videoContainer = document.querySelector('.html5-video-container');
+            if (videoContainer) {
+                videoContainer.style.opacity = '0';
+                videoContainer.style.height = '1px';
+            }
+            
+            // Mantém apenas o áudio
+            const video = document.querySelector('video');
+            if (video) {
+                video.style.display = 'none';
+            }
+        })();
+        """
+        
+        try:
+            self.driver.execute_script(hide_video_js)
+            logger.info("Player de vídeo oculto (apenas áudio)")
+        except Exception as e:
+            logger.debug(f"Erro ao ocultar player de vídeo: {e}")
     
     def _extract_video_info(self, element) -> Dict:
         """Extrai informações do vídeo do elemento de resultado"""

@@ -546,9 +546,21 @@ async function addMusicToQueue(music) {
         // Sucesso!
         document.getElementById('added-song-title').textContent = music.title;
         document.getElementById('balance-after').textContent = data.new_balance.toFixed(2);
+        
+        // Mostra mensagem adicional sobre a posição na fila
+        const successMessage = document.getElementById('success-message');
+        if (successMessage) {
+            if (data.will_play_immediately) {
+                successMessage.textContent = '🎵 Sua música vai tocar agora!';
+            } else {
+                successMessage.textContent = `🎵 Música adicionada à fila! Posição: ${data.queue_position}`;
+            }
+        }
+        
         showScreen('screen-success');
         
         await refreshStatus();
+        await refreshQueue();
         
     } catch (error) {
         hideLoading();

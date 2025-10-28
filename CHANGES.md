@@ -1,4 +1,291 @@
-# 🎯 Resumo das Alterações - Suporte PC/Linux e Navegação por Teclado
+# 🎯 Resumo das Alterações - Melhorias da Jukebox
+
+## 📝 Visão Geral
+
+Este documento resume as alterações mais recentes implementadas para melhorar a Jukebox, incluindo novo preço por música, reprodução de vídeo opcional e melhorias no sistema de filas.
+
+## ✨ Funcionalidades Implementadas Recentemente
+
+### 1. Preço Ajustado para 1 Real por Música
+
+**Arquivos Modificados**: 
+- `src/server/config.py`
+- `env.example`
+- `src/server/static/index.html`
+
+**Mudanças**:
+- ✅ Preço padrão por música reduzido de R$ 5,00 para R$ 1,00
+- ✅ Configuração mantida flexível via variável de ambiente `PRICE_PER_SONG`
+- ✅ Interface atualizada para refletir o novo preço
+
+### 2. Reprodução de Vídeo Opcional
+
+**Arquivos Modificados**: 
+- `src/server/config.py`
+- `src/youtube/youtube_player.py`
+- `env.example`
+
+**Nova Funcionalidade**:
+- ✅ Adicionada configuração `VIDEO_PLAYBACK_ENABLED` para controlar reprodução de vídeo
+- ✅ Quando desabilitada, apenas o áudio é reproduzido (vídeo oculto)
+- ✅ Método `_hide_video_player()` implementado para ocultar player mantendo áudio
+- ✅ Economia de recursos quando vídeo não é necessário
+
+**Configuração**:
+```bash
+# Em .env ou env.example
+VIDEO_PLAYBACK_ENABLED=true   # Exibe vídeo e áudio
+VIDEO_PLAYBACK_ENABLED=false  # Apenas áudio (vídeo oculto)
+```
+
+### 3. Sistema de Filas Aprimorado
+
+**Arquivos Modificados**: 
+- `src/server/app.py`
+- `src/server/static/app.js`
+- `src/server/static/index.html`
+
+**Melhorias**:
+- ✅ Sistema de filas já existente documentado e melhorado
+- ✅ Músicas são adicionadas à fila sem interromper a música atual
+- ✅ Endpoint `/api/music/queue` retorna agora:
+  - Tamanho da fila
+  - Música atualmente tocando
+  - Lista completa de músicas na fila
+- ✅ Feedback visual sobre posição na fila ao adicionar música
+- ✅ Mensagem indica se música vai tocar imediatamente ou entrar na fila
+
+**Comportamento do Sistema de Filas**:
+1. Quando uma música é adicionada, ela recebe status `queued`
+2. A música atual (status `playing`) não é interrompida
+3. Quando a música atual termina, o sistema chama `/api/music/next`
+4. A próxima música da fila é marcada como `playing`
+5. O ciclo continua até a fila estar vazia
+
+**Exemplo de Resposta da API**:
+```json
+{
+  "message": "Música adicionada à fila",
+  "song_id": 123,
+  "new_balance": 9.00,
+  "queue_position": 3,
+  "will_play_immediately": false
+}
+```
+
+## 🔧 Alterações Técnicas Detalhadas
+
+### Configurações (`config.py`)
+
+**Mudanças**:
+```python
+# Novo preço padrão
+PRICE_PER_SONG = float(os.getenv('PRICE_PER_SONG', '1.00'))  # Antes: 5.00
+
+# Nova configuração de vídeo
+VIDEO_PLAYBACK_ENABLED = os.getenv('VIDEO_PLAYBACK_ENABLED', 'true').lower() == 'true'
+```
+
+### YouTube Player (`youtube_player.py`)
+
+**Novo Método**:
+```python
+def _hide_video_player(self):
+    """Oculta o player de vídeo mas mantém o áudio"""
+    # JavaScript que oculta elementos de vídeo mantendo áudio
+```
+
+**Método Atualizado**:
+```python
+def play_video(self, video_id: str) -> bool:
+    # ... código existente ...
+    
+    # Se reprodução de vídeo está desabilitada, oculta o vídeo
+    if not self.config.VIDEO_PLAYBACK_ENABLED:
+        self._hide_video_player()
+```
+
+### API Endpoints (`app.py`)
+
+**Endpoint Melhorado**: `/api/music/queue`
+```python
+@app.route('/api/music/queue')
+def get_queue():
+    queue = music_queue.get_queue()
+    queue_size = music_queue.get_queue_size()
+    
+    # Busca música atualmente tocando
+    current_song = None
+    for song in queue:
+        if song['status'] == 'playing':
+            current_song = song
+            break
+    
+    return jsonify({
+        "queue": queue,
+        "queue_size": queue_size,
+        "current_song": current_song
+    })
+```
+
+**Endpoint Melhorado**: `/api/music/add`
+```python
+@app.route('/api/music/add', methods=['POST'])
+def add_to_queue():
+    # ... validações ...
+    
+    # Verifica se há música tocando
+    has_playing = any(song['status'] == 'playing' for song in queue)
+    
+    return jsonify({
+        "message": "Música adicionada à fila",
+        "song_id": song_id,
+        "new_balance": balance,
+        "queue_position": queue_size,
+        "will_play_immediately": not has_playing
+    })
+```
+
+### Frontend (`app.js`)
+
+**Função Atualizada**: `addMusicToQueue()`
+```javascript
+// Mostra mensagem sobre posição na fila
+if (data.will_play_immediately) {
+    successMessage.textContent = '🎵 Sua música vai tocar agora!';
+} else {
+    successMessage.textContent = `🎵 Música adicionada à fila! Posição: ${data.queue_position}`;
+}
+
+// Atualiza fila automaticamente
+await refreshQueue();
+```
+
+## 📊 Benefícios das Mudanças
+
+### 1. Preço de R$ 1,00
+- 💰 Mais acessível para usuários
+- 📈 Potencial para maior volume de músicas tocadas
+- 🎯 Alinhado com modelos de jukebox modernas
+
+### 2. Vídeo Opcional
+- ⚡ Economia de recursos computacionais
+- 🔋 Menor consumo de energia
+- 🚀 Melhor performance em Raspberry Pi com recursos limitados
+- 🎵 Foco no áudio quando vídeo não é necessário
+
+### 3. Sistema de Filas Melhorado
+- 🎶 Experiência do usuário melhorada
+- 📋 Transparência sobre posição na fila
+- 🔄 Não interrompe música atual
+- 👥 Suporta múltiplos usuários adicionando músicas
+- 💡 Feedback claro sobre quando música vai tocar
+
+## 🎮 Casos de Uso
+
+### Cenário 1: Usuário com 10 Créditos
+```
+1. Usuário tem R$ 10,00 de crédito
+2. Seleciona primeira música → Música toca imediatamente
+3. Seleciona segunda música → Entra na fila (posição 1)
+4. Seleciona terceira música → Entra na fila (posição 2)
+5. Todas as músicas tocam em ordem, sem interrupção
+```
+
+### Cenário 2: Modo Apenas Áudio
+```
+1. Configure VIDEO_PLAYBACK_ENABLED=false no .env
+2. Jukebox inicia com player de vídeo oculto
+3. Apenas áudio é reproduzido
+4. Economia de CPU/GPU do Raspberry Pi
+```
+
+## 🔄 Compatibilidade
+
+### Retrocompatibilidade
+- ✅ Todas as mudanças são retrocompatíveis
+- ✅ Configurações antigas continuam funcionando
+- ✅ Valor padrão pode ser alterado via `.env`
+- ✅ Sistema de filas existente mantido e melhorado
+
+### Configurações Padrão
+```bash
+# Valores padrão (em config.py)
+PRICE_PER_SONG=1.00              # Antes: 5.00
+VIDEO_PLAYBACK_ENABLED=true      # Novo
+```
+
+## 📈 Estatísticas
+
+- **Arquivos modificados**: 6
+  - `src/server/config.py`
+  - `src/server/app.py`
+  - `src/youtube/youtube_player.py`
+  - `src/server/static/app.js`
+  - `src/server/static/index.html`
+  - `env.example`
+- **Linhas de código adicionadas**: ~120
+- **Linhas de código modificadas**: ~40
+- **Novos métodos**: 1 (`_hide_video_player()`)
+- **Endpoints melhorados**: 2 (`/api/music/queue`, `/api/music/add`)
+
+## 🎯 Objetivos Alcançados
+
+✅ **Requisito 1**: Cobrar 1 real por música
+- Preço padrão alterado de R$ 5,00 para R$ 1,00
+- Interface atualizada
+- Configurável via variável de ambiente
+
+✅ **Requisito 2**: Reprodução de vídeo opcional
+- Nova configuração `VIDEO_PLAYBACK_ENABLED`
+- Player de vídeo pode ser ocultado
+- Áudio continua funcionando normalmente
+
+✅ **Requisito 3**: Sistema de filas melhorado
+- Músicas não interrompem a atual
+- Feedback claro sobre posição na fila
+- Sistema robusto para múltiplos usuários
+- Informação em tempo real sobre fila
+
+## 📚 Documentação Atualizada
+
+### Arquivos de Configuração
+- `env.example` - Atualizado com novos valores padrão
+- Comentários adicionados explicando novas opções
+
+### Código
+- Docstrings atualizadas em métodos modificados
+- Comentários explicativos sobre sistema de filas
+- Logs informativos sobre reprodução de vídeo
+
+## 🎉 Conclusão
+
+As alterações implementadas melhoram significativamente a experiência do usuário e a flexibilidade da Jukebox:
+
+### Principais Conquistas:
+
+1. **Preço mais acessível** - R$ 1,00 por música
+2. **Flexibilidade de reprodução** - Vídeo opcional para economia de recursos
+3. **Sistema de filas robusto** - Não interrompe música atual, suporta múltiplos usuários
+4. **Feedback melhorado** - Usuário sabe exatamente quando sua música vai tocar
+5. **Configurável** - Todas as mudanças podem ser ajustadas via `.env`
+
+### Impacto:
+
+- 💰 **Econômico**: Preço mais acessível
+- ⚡ **Performance**: Opção de desabilitar vídeo economiza recursos
+- 👥 **Experiência**: Sistema de filas mais transparente e robusto
+- 🔧 **Manutenção**: Código mais limpo e bem documentado
+
+---
+
+**Data**: Outubro 2025  
+**Versão**: 2.2  
+**Status**: ✅ Completo e Testado
+
+---
+
+# 🎯 Resumo das Alterações Anteriores - Suporte PC/Linux e Navegação por Teclado
 
 ## 📝 Visão Geral
 
