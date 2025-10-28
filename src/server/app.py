@@ -437,12 +437,12 @@ def add_to_queue():
         # current_queue_size é o tamanho atual da fila
         # Após adicionar esta música, teremos current_queue_size + 1 músicas
         # E o usuário terá balance_after_purchase créditos
-        # Ele deve ter crédito suficiente para pelo menos current_queue_size músicas restantes
-        if current_queue_size > max_queue_size_after:
+        # O usuário deve ter crédito suficiente para pagar pelas músicas que ficarem na fila
+        if current_queue_size >= max_queue_size_after + 1:
             return jsonify({
                 "error": "Fila cheia. Limite baseado em créditos disponíveis",
                 "current_queue_size": current_queue_size,
-                "max_queue_size": max_queue_size_after + 1,  # +1 porque a música atual também conta
+                "max_queue_size": max_queue_size_after + 1,  # Máximo permitido com os créditos atuais
                 "balance": balance
             }), 429
         
@@ -463,17 +463,18 @@ def add_to_queue():
             idle_music_manager.update_activity()
         
         # Se não há música tocando, pode começar a tocar esta imediatamente
-        queue = music_queue.get_queue()
+        queue = music_queue.get_queue(limit=100)  # Get all songs to count properly
         has_playing = any(song['status'] == 'playing' for song in queue)
         
-        # Calcula posição na fila (total de músicas incluindo a recém-adicionada)
-        total_queue_size = music_queue.get_queue_size()
+        # Calcula posição na fila
+        # queue inclui músicas 'playing' e 'queued', e já inclui a música recém-adicionada
+        queue_position = len(queue)  # Total de músicas na fila (incluindo a atual)
         
         return jsonify({
             "message": "Música adicionada à fila",
             "song_id": song_id,
             "new_balance": credit_balance.get_balance(),
-            "queue_position": total_queue_size,  # Posição real na fila (1-based)
+            "queue_position": queue_position,  # Posição total na fila
             "will_play_immediately": not has_playing
         })
         
