@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jukebox - YouTube IFrame Player Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-play {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-play:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-pause {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .btn-pause:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+        
+        .btn-stop {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-stop:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+        
+        .examples {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+        
+        .examples h3 {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        
+        .examples ul {
+            list-style: none;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .examples li {
+            margin-bottom: 5px;
+        }
+        
+        .examples code {
+            background: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        #player-placeholder {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Jukebox YouTube Player</h1>
+        <p class="subtitle">Audio-only playback using YouTube IFrame API</p>
+        
+        <div id="status" class="status info">
+            Loading YouTube IFrame API...
+        </div>
+        
+        <div class="input-group">
+            <label for="video-input">YouTube URL or Video ID:</label>
+            <input 
+                type="text" 
+                id="video-input" 
+                placeholder="e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ or dQw4w9WgXcQ"
+            >
+        </div>
+        
+        <div class="button-group">
+            <button id="btn-play" class="btn-play" disabled>▶ Play</button>
+            <button id="btn-pause" class="btn-pause" disabled>⏸ Pause</button>
+            <button id="btn-stop" class="btn-stop" disabled>⏹ Stop</button>
+        </div>
+        
+        <div class="examples">
+            <h3>Example URLs:</h3>
+            <ul>
+                <li>• Full URL: <code>https://www.youtube.com/watch?v=dQw4w9WgXcQ</code></li>
+                <li>• Short URL: <code>https://youtu.be/dQw4w9WgXcQ</code></li>
+                <li>• Video ID only: <code>dQw4w9WgXcQ</code></li>
+            </ul>
+        </div>
+        
+        <!-- Hidden div for the YouTube player (audio-only mode) -->
+        <div id="player-placeholder"></div>
+    </div>
+    
+    <!-- Load the external YouTube player module -->
+    <script src="../static/js/youtube-player.js"></script>
+    
+    <script>
+        // UI elements
+        const videoInput = document.getElementById('video-input');
+        const btnPlay = document.getElementById('btn-play');
+        const btnPause = document.getElementById('btn-pause');
+        const btnStop = document.getElementById('btn-stop');
+        const statusDiv = document.getElementById('status');
+        
+        // Helper function to extract video ID from various YouTube URL formats
+        function extractVideoId(input) {
+            if (!input) return null;
+            
+            // Already a video ID (11 characters, alphanumeric and underscores/hyphens)
+            if (/^[a-zA-Z0-9_-]{11}$/.test(input.trim())) {
+                return input.trim();
+            }
+            
+            // Try to parse as URL
+            try {
+                const url = new URL(input);
+                
+                // Standard youtube.com URLs
+                if (url.hostname.includes('youtube.com')) {
+                    return url.searchParams.get('v');
+                }
+                
+                // Short youtu.be URLs
+                if (url.hostname === 'youtu.be') {
+                    return url.pathname.slice(1).split('?')[0];
+                }
+            } catch (e) {
+                // Not a valid URL, might be just an ID with extra text
+                const match = input.match(/[a-zA-Z0-9_-]{11}/);
+                return match ? match[0] : null;
+            }
+            
+            return null;
+        }
+        
+        // Update status message
+        function updateStatus(message, type = 'info') {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+        
+        // Enable/disable buttons based on player state
+        function updateButtons(playing = false) {
+            btnPlay.disabled = false;
+            btnPause.disabled = !playing;
+            btnStop.disabled = !playing;
+        }
+        
+        // Wait for player to be ready
+        YoutubePlayer.onReady(() => {
+            updateStatus('✓ Player ready! Enter a YouTube URL or video ID to start.', 'success');
+            btnPlay.disabled = false;
+        });
+        
+        // Handle state changes
+        YoutubePlayer.onStateChange((state) => {
+            console.log('Player state changed:', state);
+            
+            switch (state) {
+                case 'UNSTARTED':
+                    updateStatus('Video loaded, ready to play.', 'info');
+                    updateButtons(false);
+                    break;
+                case 'PLAYING':
+                    updateStatus('▶ Now playing...', 'success');
+                    updateButtons(true);
+                    break;
+                case 'PAUSED':
+                    updateStatus('⏸ Paused', 'info');
+                    updateButtons(false);
+                    break;
+                case 'ENDED':
+                    updateStatus('✓ Playback finished.', 'info');
+                    updateButtons(false);
+                    break;
+                case 'BUFFERING':
+                    updateStatus('⏳ Buffering...', 'info');
+                    break;
+                case 'CUED':
+                    updateStatus('Video cued, click Play to start.', 'info');
+                    updateButtons(false);
+                    break;
+            }
+        });
+        
+        // Play button handler
+        btnPlay.addEventListener('click', () => {
+            const input = videoInput.value.trim();
+            const videoId = extractVideoId(input);
+            
+            if (!videoId) {
+                updateStatus('❌ Invalid YouTube URL or video ID', 'error');
+                return;
+            }
+            
+            updateStatus('Loading video...', 'info');
+            YoutubePlayer.playVideoById(videoId);
+        });
+        
+        // Pause button handler
+        btnPause.addEventListener('click', () => {
+            YoutubePlayer.pause();
+        });
+        
+        // Stop button handler
+        btnStop.addEventListener('click', () => {
+            YoutubePlayer.stop();
+            updateStatus('⏹ Stopped', 'info');
+            updateButtons(false);
+        });
+        
+        // Allow Enter key to play
+        videoInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !btnPlay.disabled) {
+                btnPlay.click();
+            }
+        });
+    </script>
+</body>
+</html>
