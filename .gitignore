@@ -66,3 +66,14 @@ dist/
 # === INSTALLERS ===
 installers/
 debian/
+
+# === ANDROID ===
+android/app/build/
+android/app/.gradle/
+android/.gradle/
+android/build/
+android/local.properties
+android/.idea/
+android/*.iml
+*.apk
+*.aab
