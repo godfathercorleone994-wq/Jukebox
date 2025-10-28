@@ -2,6 +2,8 @@
 
 Sistema embarcado de Jukebox com aceitador de notas e YouTube Music para Raspberry Pi.
 
+**✨ Novo: Agora funciona em qualquer PC/Linux com navegação por teclado!** 
+
 ## 🚀 Características
 
 - 💰 **Múltiplos métodos de pagamento**: Dinheiro, PIX, Débito, Crédito
@@ -9,6 +11,8 @@ Sistema embarcado de Jukebox com aceitador de notas e YouTube Music para Raspber
 - 🎧 **Música ambiente automática**: Toca músicas aleatórias a cada 10 minutos quando não há atividade
 - 🚫 **Bloqueio de anúncios**: Sistema avançado de ad-blocking integrado
 - 📱 **Interface touchscreen responsiva** com design moderno
+- ⌨️ **Navegação completa por teclado**: Funciona sem mouse ou touchscreen
+- 🖥️ **Suporte para PC/Linux**: Não requer Raspberry Pi para desenvolvimento/testes
 - 💾 **Banco de dados SQLite** para logs, transações e histórico
 - 🔒 **API REST completa** protegida por token
 - 🔌 **Integração com hardware** via GPIO (aceitador de notas)
@@ -18,47 +22,72 @@ Sistema embarcado de Jukebox com aceitador de notas e YouTube Music para Raspber
 
 ## 📋 Requisitos
 
-### Hardware
+### Opção 1: Raspberry Pi (Produção)
+
+#### Hardware
 - Raspberry Pi 4 (4GB RAM recomendado)
 - Display Touchscreen 7" ou superior
 - Aceitador de Notas JCM WBA10 (opcional)
 - Conexão à Internet
 
-### Software
+#### Software
 - Raspberry Pi OS Lite (64-bit) - Bullseye ou superior
 - Python 3.9+
 - Chrome/Chromium Browser + ChromeDriver
 
+### Opção 2: PC/Linux (Desenvolvimento/Testes)
+
+#### Hardware
+- Qualquer PC com Linux (Ubuntu, Debian, Fedora, etc.)
+- **Não requer** Raspberry Pi, GPIO ou touchscreen
+- Teclado e mouse/touchpad
+- Conexão à Internet (opcional)
+
+#### Software
+- Linux (qualquer distribuição) ou WSL2 no Windows
+- Python 3.9+
+- Navegador web moderno
+
+📖 **Veja o guia completo**: [PC-LINUX.md](PC-LINUX.md)
+
 ## 🛠️ Instalação Rápida
+
+### Para Raspberry Pi (Produção)
 
 ```bash
 # Clone o repositório
 git clone https://github.com/godfathercorleone994-wq/Jukebox.git
 cd Jukebox
 
-# Crie ambiente virtual
-python3 -m venv venv
-source venv/bin/activate
+# Execute o script de inicialização
+./start.sh
 
-# Instale dependências
-pip install -r requirements.txt
-
-# Configure variáveis de ambiente
-cp env.example .env
-nano .env  # Edite com suas configurações
-
-# IMPORTANTE: Para ativar YouTube e música idle
-# Configure no .env: YOUTUBE_ENABLED=true
-# (Requer display conectado ao Raspberry Pi)
-
-# Execute testes
-python3 tests/test_jukebox.py
-
-# Inicie o servidor
-python3 src/server/app.py
+# Acesse: http://localhost:5000
 ```
 
-Acesse: http://localhost:5000
+📖 **Guia completo de deploy**: [DEPLOY.md](DEPLOY.md)
+
+### Para PC/Linux (Desenvolvimento/Testes)
+
+```bash
+# Clone o repositório
+git clone https://github.com/godfathercorleone994-wq/Jukebox.git
+cd Jukebox
+
+# Execute o script para PC (detecta automaticamente o ambiente)
+./start-pc.sh
+
+# Acesse: http://localhost:5000
+```
+
+O script `start-pc.sh` automaticamente:
+- ✅ Detecta que não é Raspberry Pi
+- ✅ Instala apenas dependências necessárias (sem RPi.GPIO)
+- ✅ Desabilita hardware GPIO
+- ✅ Configura modo desenvolvimento
+- ✅ Habilita navegação por teclado
+
+📖 **Guia completo para PC**: [PC-LINUX.md](PC-LINUX.md)
 
 ## 📂 Estrutura do Projeto
 
@@ -226,6 +255,24 @@ A interface possui 5 telas principais:
 4. **Sucesso** - Confirmação de música adicionada
 5. **Erro** - Tratamento de erros com feedback claro
 
+### ⌨️ Navegação por Teclado
+
+Todas as telas suportam navegação completa por teclado:
+
+- **Setas (↑↓←→)**: Navegar entre elementos
+- **Enter**: Selecionar/ativar
+- **Tab**: Próximo elemento
+- **1-9**: Seleção rápida
+- **H**: Voltar ao início
+- **Esc**: Voltar/Cancelar
+- **F1 ou ?**: Mostrar ajuda de atalhos
+
+Ideal para:
+- 🖥️ PCs sem touchscreen
+- ⌨️ Uso em terminais/kiosks com teclado
+- ♿ Acessibilidade
+- 🎮 Controle tipo console
+
 ## 💡 Exemplos de Uso
 
 ### Simular inserção de dinheiro (desenvolvimento)
@@ -285,6 +332,17 @@ Consulte [DEPLOY.md](DEPLOY.md) seção "Troubleshooting"
 
 MIT License - veja [LICENSE](LICENSE) para detalhes.
 
+## 🌟 Novidades
+
+### v2.0 - Suporte PC/Linux e Navegação por Teclado
+- ✨ Novo script `start-pc.sh` para executar em qualquer PC/Linux
+- ⌨️ Navegação completa por teclado (setas, Enter, Tab, números)
+- 🖥️ Detecção automática de ambiente (Raspberry Pi vs PC)
+- 📖 Documentação específica para PC ([PC-LINUX.md](PC-LINUX.md))
+- ♿ Melhor acessibilidade
+- 🎯 Indicadores visuais de foco para teclado
+- 🔧 Configuração automática baseada no ambiente
+
 ## 👥 Contribuindo
 
 Contribuições são bem-vindas! Por favor:
@@ -299,7 +357,10 @@ Contribuições são bem-vindas! Por favor:
 
 - 📧 Email: godfathercorleone994@gmail.com
 - 🐛 Issues: [GitHub Issues](https://github.com/godfathercorleone994-wq/Jukebox/issues)
-- 📖 Docs: [DEPLOY.md](DEPLOY.md) | [API.md](API.md)
+- 📖 Docs: 
+  - [DEPLOY.md](DEPLOY.md) - Deploy em Raspberry Pi
+  - [PC-LINUX.md](PC-LINUX.md) - Uso em PC/Linux
+  - [API.md](API.md) - API REST
 
 ## 🙏 Agradecimentos
 
