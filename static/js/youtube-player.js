@@ -263,247 +263,6 @@ const YoutubePlayer = (function() {
     };
 })();
 
-// Auto-initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        YoutubePlayer.onReady(() => {
-            console.log('YouTube Player module initialized and ready');
-        });
-        
-        // Initialize the player
-        const initPromise = (function() {
-            let player = null;
-            const readyCallback = null;
-            const stateChangeCallback = null;
-            
-            const PlayerState = {
-                UNSTARTED: -1,
-                ENDED: 0,
-                PLAYING: 1,
-                PAUSED: 2,
-                BUFFERING: 3,
-                CUED: 5
-            };
-            
-            const StateNames = {
-                '-1': 'UNSTARTED',
-                '0': 'ENDED',
-                '1': 'PLAYING',
-                '2': 'PAUSED',
-                '3': 'BUFFERING',
-                '5': 'CUED'
-            };
-            
-            function loadYouTubeAPI() {
-                return new Promise((resolve, reject) => {
-                    if (window.YT && window.YT.Player) {
-                        resolve();
-                        return;
-                    }
-                    
-                    if (window.onYouTubeIframeAPIReady) {
-                        const checkInterval = setInterval(() => {
-                            if (window.YT && window.YT.Player) {
-                                clearInterval(checkInterval);
-                                resolve();
-                            }
-                        }, 100);
-                        return;
-                    }
-                    
-                    window.onYouTubeIframeAPIReady = () => {
-                        resolve();
-                    };
-                    
-                    const tag = document.createElement('script');
-                    tag.src = 'https://www.youtube.com/iframe_api';
-                    tag.onerror = () => reject(new Error('Failed to load YouTube IFrame API'));
-                    
-                    const firstScriptTag = document.getElementsByTagName('script')[0];
-                    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-                });
-            }
-            
-            function initPlayer() {
-                return loadYouTubeAPI().then(() => {
-                    let container = document.getElementById('player-placeholder');
-                    if (!container) {
-                        container = document.createElement('div');
-                        container.id = 'player-placeholder';
-                        container.style.display = 'none';
-                        document.body.appendChild(container);
-                    }
-                    
-                    player = new YT.Player('player-placeholder', {
-                        height: '1',
-                        width: '1',
-                        playerVars: {
-                            autoplay: 0,
-                            controls: 0,
-                            disablekb: 1,
-                            fs: 0,
-                            modestbranding: 1,
-                            playsinline: 1,
-                            rel: 0,
-                            enablejsapi: 1
-                        },
-                        events: {
-                            onReady: (event) => {
-                                console.log('YouTube Player is ready');
-                                if (YoutubePlayer.onReady) {
-                                    const callbacks = YoutubePlayer._readyCallbacks || [];
-                                    callbacks.forEach(cb => cb(event));
-                                }
-                            },
-                            onStateChange: (event) => {
-                                const stateName = StateNames[event.data] || 'UNKNOWN';
-                                console.log('Player state changed to:', stateName);
-                                
-                                const callbacks = YoutubePlayer._stateChangeCallbacks || [];
-                                callbacks.forEach(cb => cb(stateName, event.data));
-                            },
-                            onError: (event) => {
-                                console.error('YouTube Player error:', event.data);
-                                
-                                const errorMessages = {
-                                    2: 'Invalid video ID',
-                                    5: 'HTML5 player error',
-                                    100: 'Video not found or private',
-                                    101: 'Video not allowed to be played in embedded players',
-                                    150: 'Video not allowed to be played in embedded players'
-                                };
-                                
-                                const message = errorMessages[event.data] || 'Unknown error';
-                                console.error('Error details:', message);
-                                
-                                const callbacks = YoutubePlayer._stateChangeCallbacks || [];
-                                callbacks.forEach(cb => cb('ERROR', event.data, message));
-                            }
-                        }
-                    });
-                });
-            }
-            
-            return initPlayer();
-        })();
-        
-        initPromise.catch(error => {
-            console.error('Failed to initialize YouTube Player:', error);
-        });
-    });
-} else {
-    // DOM already loaded
-    YoutubePlayer.onReady(() => {
-        console.log('YouTube Player module initialized and ready');
-    });
-    
-    // Initialize immediately
-    (function() {
-        let player = null;
-        
-        const StateNames = {
-            '-1': 'UNSTARTED',
-            '0': 'ENDED',
-            '1': 'PLAYING',
-            '2': 'PAUSED',
-            '3': 'BUFFERING',
-            '5': 'CUED'
-        };
-        
-        function loadYouTubeAPI() {
-            return new Promise((resolve, reject) => {
-                if (window.YT && window.YT.Player) {
-                    resolve();
-                    return;
-                }
-                
-                if (window.onYouTubeIframeAPIReady) {
-                    const checkInterval = setInterval(() => {
-                        if (window.YT && window.YT.Player) {
-                            clearInterval(checkInterval);
-                            resolve();
-                        }
-                    }, 100);
-                    return;
-                }
-                
-                window.onYouTubeIframeAPIReady = () => {
-                    resolve();
-                };
-                
-                const tag = document.createElement('script');
-                tag.src = 'https://www.youtube.com/iframe_api';
-                tag.onerror = () => reject(new Error('Failed to load YouTube IFrame API'));
-                
-                const firstScriptTag = document.getElementsByTagName('script')[0];
-                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-            });
-        }
-        
-        function initPlayer() {
-            return loadYouTubeAPI().then(() => {
-                let container = document.getElementById('player-placeholder');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'player-placeholder';
-                    container.style.display = 'none';
-                    document.body.appendChild(container);
-                }
-                
-                player = new YT.Player('player-placeholder', {
-                    height: '1',
-                    width: '1',
-                    playerVars: {
-                        autoplay: 0,
-                        controls: 0,
-                        disablekb: 1,
-                        fs: 0,
-                        modestbranding: 1,
-                        playsinline: 1,
-                        rel: 0,
-                        enablejsapi: 1
-                    },
-                    events: {
-                        onReady: (event) => {
-                            console.log('YouTube Player is ready');
-                            const callbacks = YoutubePlayer._readyCallbacks || [];
-                            callbacks.forEach(cb => cb(event));
-                        },
-                        onStateChange: (event) => {
-                            const stateName = StateNames[event.data] || 'UNKNOWN';
-                            console.log('Player state changed to:', stateName);
-                            
-                            const callbacks = YoutubePlayer._stateChangeCallbacks || [];
-                            callbacks.forEach(cb => cb(stateName, event.data));
-                        },
-                        onError: (event) => {
-                            console.error('YouTube Player error:', event.data);
-                            
-                            const errorMessages = {
-                                2: 'Invalid video ID',
-                                5: 'HTML5 player error',
-                                100: 'Video not found or private',
-                                101: 'Video not allowed to be played in embedded players',
-                                150: 'Video not allowed to be played in embedded players'
-                            };
-                            
-                            const message = errorMessages[event.data] || 'Unknown error';
-                            console.error('Error details:', message);
-                            
-                            const callbacks = YoutubePlayer._stateChangeCallbacks || [];
-                            callbacks.forEach(cb => cb('ERROR', event.data, message));
-                        }
-                    }
-                });
-            });
-        }
-        
-        initPlayer().catch(error => {
-            console.error('Failed to initialize YouTube Player:', error);
-        });
-    })();
-}
-
 // Store callbacks in arrays to support multiple listeners
 YoutubePlayer._readyCallbacks = [];
 YoutubePlayer._stateChangeCallbacks = [];
@@ -523,3 +282,97 @@ YoutubePlayer.onStateChange = function(callback) {
         YoutubePlayer._stateChangeCallbacks.push(callback);
     }
 };
+
+// Auto-initialize the player when DOM is ready
+(function() {
+    function init() {
+        // Load the YouTube IFrame API
+        if (!window.YT || !window.YT.Player) {
+            // Set up callback for when API loads
+            const originalCallback = window.onYouTubeIframeAPIReady;
+            window.onYouTubeIframeAPIReady = function() {
+                if (originalCallback) originalCallback();
+                initializePlayer();
+            };
+            
+            // Load the script if not already loaded
+            if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+                const tag = document.createElement('script');
+                tag.src = 'https://www.youtube.com/iframe_api';
+                const firstScriptTag = document.getElementsByTagName('script')[0];
+                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            }
+        } else {
+            // API already loaded
+            initializePlayer();
+        }
+    }
+    
+    function initializePlayer() {
+        // Create hidden container if it doesn't exist
+        let container = document.getElementById('player-placeholder');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'player-placeholder';
+            container.style.display = 'none';
+            document.body.appendChild(container);
+        }
+        
+        // Create the player (will trigger onReady callback)
+        try {
+            new YT.Player('player-placeholder', {
+                height: '1',
+                width: '1',
+                playerVars: {
+                    autoplay: 0,
+                    controls: 0,
+                    disablekb: 1,
+                    fs: 0,
+                    modestbranding: 1,
+                    playsinline: 1,
+                    rel: 0,
+                    enablejsapi: 1
+                },
+                events: {
+                    onReady: function(event) {
+                        console.log('YouTube Player is ready');
+                        YoutubePlayer._readyCallbacks.forEach(cb => cb(event));
+                    },
+                    onStateChange: function(event) {
+                        const StateNames = {
+                            '-1': 'UNSTARTED',
+                            '0': 'ENDED',
+                            '1': 'PLAYING',
+                            '2': 'PAUSED',
+                            '3': 'BUFFERING',
+                            '5': 'CUED'
+                        };
+                        const stateName = StateNames[event.data] || 'UNKNOWN';
+                        YoutubePlayer._stateChangeCallbacks.forEach(cb => cb(stateName, event.data));
+                    },
+                    onError: function(event) {
+                        console.error('YouTube Player error:', event.data);
+                        const errorMessages = {
+                            2: 'Invalid video ID',
+                            5: 'HTML5 player error',
+                            100: 'Video not found or private',
+                            101: 'Video not allowed to be played in embedded players',
+                            150: 'Video not allowed to be played in embedded players'
+                        };
+                        const message = errorMessages[event.data] || 'Unknown error';
+                        YoutubePlayer._stateChangeCallbacks.forEach(cb => cb('ERROR', event.data, message));
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Failed to initialize YouTube Player:', error);
+        }
+    }
+    
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
