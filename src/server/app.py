@@ -22,7 +22,7 @@ load_dotenv()
 # Importa módulos do projeto
 from src.server.config import (
     FlaskConfig, BusinessConfig, PaymentMethod,
-    PaymentGatewayConfig, LogConfig
+    PaymentGatewayConfig, LogConfig, AdminConfig
 )
 from src.db import Database, Transaction, CreditBalance, MusicQueue
 from src.hardware import BillAcceptor
@@ -505,6 +505,53 @@ def simulate_cash():
     except Exception as e:
         logger.error(f"Erro ao simular dinheiro: {e}")
         return safe_error_response("Erro ao simular inserção de dinheiro", 500)
+
+
+@app.route('/api/admin/add-credits', methods=['POST'])
+def admin_add_credits():
+    """Adiciona créditos usando código de administrador"""
+    if not AdminConfig.ADMIN_ENABLED:
+        return jsonify({"error": "Funcionalidade admin não habilitada"}), 403
+    
+    try:
+        data = request.json
+        code = data.get('code', '')
+        
+        # Valida código admin
+        if code != AdminConfig.ADMIN_CODE:
+            logger.warning("Tentativa de uso de código admin inválido")
+            return jsonify({"error": "Código inválido"}), 401
+        
+        # Adiciona crédito configurado
+        amount = AdminConfig.ADMIN_CREDIT_AMOUNT
+        new_balance = credit_balance.add_credit(amount)
+        
+        # Registra transação especial para auditoria
+        import uuid
+        transaction_id = f"admin_{uuid.uuid4().hex[:12]}"
+        transactions.create(
+            transaction_id=transaction_id,
+            payment_method=PaymentMethod.CASH,  # Usa CASH como tipo base
+            amount=amount,
+            status=PaymentStatus.APPROVED
+        )
+        
+        # Atualiza atividade no gerenciador de música idle
+        if idle_music_manager:
+            idle_music_manager.update_activity()
+        
+        logger.info(f"Créditos admin adicionados: R$ {amount:.2f} - Novo saldo: R$ {new_balance:.2f}")
+        
+        return jsonify({
+            "success": True,
+            "message": "Créditos adicionados com sucesso",
+            "amount": amount,
+            "new_balance": new_balance
+        })
+        
+    except Exception as e:
+        logger.error(f"Erro ao adicionar créditos admin: {e}")
+        return safe_error_response("Erro ao processar código admin", 500)
 
 
 @app.route('/api/idle/status')

@@ -158,6 +158,26 @@
         </ul>
     </div>
     
+    <!-- Admin Code Modal -->
+    <div id="admin-modal" class="admin-modal" style="display: none;">
+        <div class="admin-modal-content">
+            <h2>🔐 Código de Operador</h2>
+            <p>Digite o código secreto para adicionar créditos:</p>
+            <input 
+                type="password" 
+                id="admin-code-input" 
+                placeholder="Código"
+                autocomplete="off"
+                maxlength="10"
+            >
+            <div class="admin-modal-buttons">
+                <button onclick="submitAdminCode()" class="btn-primary">✅ Confirmar</button>
+                <button onclick="closeAdminModal()" class="btn-secondary">❌ Cancelar</button>
+            </div>
+            <p class="admin-error" id="admin-error" style="display: none;"></p>
+        </div>
+    </div>
+    
     <script src="/static/app.js"></script>
 </body>
 </html>
