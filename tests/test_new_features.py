@@ -8,6 +8,8 @@ Teste para as novas funcionalidades implementadas:
 
 import sys
 import os
+import tempfile
+import uuid
 
 # Adiciona src ao path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -23,8 +25,10 @@ def test_price_configuration():
     print(f"  ✓ Preço base por música: R$ {price:.2f}")
     
     # Verifica se está em 1.00 ou se a variável de ambiente foi definida
-    if price == 1.00:
-        print("  ✅ Preço padrão correto: R$ 1.00")
+    # Aceita 1.00 como valor padrão esperado, mas permite outros valores via env
+    expected_default = 1.00
+    if price == expected_default:
+        print(f"  ✅ Preço padrão correto: R$ {expected_default:.2f}")
     else:
         print(f"  ⚠️  Preço configurado via env: R$ {price:.2f}")
     
@@ -54,12 +58,11 @@ def test_queue_system():
     """Testa sistema de filas"""
     print("\n🧪 Testando sistema de filas...")
     
-    import tempfile
     from pathlib import Path
     from src.db import Database, MusicQueue
     
-    # Usa banco temporário para testes
-    temp_db = Path(tempfile.gettempdir()) / f"test_queue_{os.getpid()}.db"
+    # Usa banco temporário para testes com nome único
+    temp_db = Path(tempfile.gettempdir()) / f"test_queue_{uuid.uuid4().hex[:8]}.db"
     db = Database(db_path=temp_db)
     queue = MusicQueue(db)
     
@@ -112,13 +115,17 @@ def test_queue_system():
         
         print("  ✅ Sistema de filas testado com sucesso")
         
-        # Limpa banco de teste
-        temp_db.unlink()
-        
         return True
     except Exception as e:
         print(f"  ❌ Erro ao testar fila: {e}")
         return False
+    finally:
+        # Limpa banco de teste (sempre executado)
+        try:
+            if temp_db.exists():
+                temp_db.unlink()
+        except Exception as e:
+            print(f"  ⚠️  Erro ao limpar arquivo temporário: {e}")
 
 def test_env_example():
     """Verifica se env.example foi atualizado"""
