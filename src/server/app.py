@@ -111,6 +111,37 @@ def on_cash_received(amount: float):
     logger.info(f"Novo saldo: R$ {new_balance:.2f}")
 
 
+# ===== HELPER FUNCTIONS =====
+
+def safe_error_response(message: str, status_code: int = 500):
+    """
+    Retorna resposta de erro segura sem expor detalhes internos
+    
+    Args:
+        message: Mensagem genérica de erro
+        status_code: Código HTTP
+    
+    Returns:
+        JSON response com erro
+    """
+    if FlaskConfig.ENV == 'development':
+        # Em desenvolvimento, pode mostrar mais detalhes
+        return jsonify({"error": message}), status_code
+    else:
+        # Em produção, mensagem genérica
+        error_messages = {
+            400: "Requisição inválida",
+            401: "Não autorizado",
+            402: "Pagamento necessário",
+            403: "Acesso negado",
+            404: "Recurso não encontrado",
+            429: "Muitas requisições",
+            500: "Erro interno do servidor",
+            503: "Serviço temporariamente indisponível"
+        }
+        return jsonify({"error": error_messages.get(status_code, "Erro no servidor")}), status_code
+
+
 # ===== MIDDLEWARE DE AUTENTICAÇÃO =====
 
 def require_hardware_token(f):
@@ -152,7 +183,7 @@ def api_status():
         })
     except Exception as e:
         logger.error(f"Erro ao obter status: {e}")
-        return jsonify({"error": str(e)}), 500
+        return safe_error_response("Erro ao obter status do sistema", 500)
 
 
 @app.route('/api/balance')
@@ -168,7 +199,7 @@ def get_balance():
         })
     except Exception as e:
         logger.error(f"Erro ao obter saldo: {e}")
-        return jsonify({"error": str(e)}), 500
+        return safe_error_response("Erro ao obter saldo", 500)
 
 
 @app.route('/api/payment/methods')
@@ -253,7 +284,7 @@ def create_payment():
         
     except Exception as e:
         logger.error(f"Erro ao criar pagamento: {e}")
-        return jsonify({"error": str(e)}), 500
+        return safe_error_response("Erro ao processar pagamento", 500)
 
 
 @app.route('/api/payment/status/<transaction_id>')
@@ -274,7 +305,7 @@ def check_payment_status(transaction_id):
         
     except Exception as e:
         logger.error(f"Erro ao verificar status: {e}")
-        return jsonify({"error": str(e)}), 500
+        return safe_error_response("Erro ao verificar status do pagamento", 500)
 
 
 @app.route('/api/webhook', methods=['POST'])
@@ -304,7 +335,7 @@ def webhook_handler():
         
     except Exception as e:
         logger.error(f"Erro ao processar webhook: {e}")
-        return jsonify({"error": str(e)}), 500
+        return safe_error_response("Erro ao processar notificação", 500)
 
 
 @app.route('/api/music/search', methods=['POST'])
@@ -334,7 +365,7 @@ def search_music():
         
     except Exception as e:
         logger.error(f"Erro ao buscar música: {e}")
-        return jsonify({"error": str(e)}), 500
+        return safe_error_response("Erro ao buscar música", 500)
 
 
 @app.route('/api/music/add', methods=['POST'])
@@ -383,7 +414,7 @@ def add_to_queue():
         
     except Exception as e:
         logger.error(f"Erro ao adicionar música: {e}")
-        return jsonify({"error": str(e)}), 500
+        return safe_error_response("Erro ao adicionar música à fila", 500)
 
 
 @app.route('/api/music/queue')
@@ -394,7 +425,7 @@ def get_queue():
         return jsonify({"queue": queue})
     except Exception as e:
         logger.error(f"Erro ao obter fila: {e}")
-        return jsonify({"error": str(e)}), 500
+        return safe_error_response("Erro ao obter fila de músicas", 500)
 
 
 @app.route('/api/music/next', methods=['POST'])
@@ -421,7 +452,7 @@ def play_next():
         
     except Exception as e:
         logger.error(f"Erro ao tocar música: {e}")
-        return jsonify({"error": str(e)}), 500
+        return safe_error_response("Erro ao tocar próxima música", 500)
 
 
 @app.route('/api/hardware/simulate-cash', methods=['POST'])
@@ -445,7 +476,7 @@ def simulate_cash():
         
     except Exception as e:
         logger.error(f"Erro ao simular dinheiro: {e}")
-        return jsonify({"error": str(e)}), 500
+        return safe_error_response("Erro ao simular inserção de dinheiro", 500)
 
 
 # ===== INICIALIZAÇÃO =====
