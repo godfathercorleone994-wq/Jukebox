@@ -244,8 +244,8 @@
             try {
                 const url = new URL(input);
                 
-                // Standard youtube.com URLs
-                if (url.hostname.includes('youtube.com')) {
+                // Standard youtube.com URLs (check exact domain or subdomain)
+                if (url.hostname === 'youtube.com' || url.hostname === 'www.youtube.com' || url.hostname.endsWith('.youtube.com')) {
                     return url.searchParams.get('v');
                 }
                 
