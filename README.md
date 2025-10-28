@@ -4,6 +4,8 @@ Sistema embarcado de Jukebox com aceitador de notas e YouTube Music para Raspber
 
 **✨ Novo: Agora funciona em qualquer PC/Linux com navegação por teclado!** 
 
+**🌐 Teste no navegador**: [Experimente a demo online via GitHub Pages!](https://godfathercorleone994-wq.github.io/Jukebox/)
+
 ## 🚀 Características
 
 - 💰 **Múltiplos métodos de pagamento**: Dinheiro, PIX, Débito, Crédito
@@ -89,6 +91,23 @@ O script `start-pc.sh` automaticamente:
 - ✅ Habilita navegação por teclado
 
 📖 **Guia completo para PC**: [PC-LINUX.md](PC-LINUX.md)
+
+### Opção 3: Testar no Navegador (Sem Instalação)
+
+🌐 **Teste online sem instalar nada!**
+
+Acesse a demo interativa hospedada no GitHub Pages:
+```
+https://godfathercorleone994-wq.github.io/Jukebox/
+```
+
+Disponível:
+- ✅ YouTube Player Demo - Teste o player com vídeos do YouTube
+- ✅ Interface responsiva e moderna
+- ✅ Sem necessidade de instalar Python, Flask ou dependências
+- ✅ Funciona em qualquer navegador moderno
+
+📖 **Guia completo**: [GITHUB_PAGES.md](GITHUB_PAGES.md)
 
 ## 📂 Estrutura do Projeto
 
@@ -361,6 +380,13 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 
 ## 🌟 Novidades
 
+### v2.2 - Testes no Navegador via GitHub Pages
+- 🌐 Deploy automático via GitHub Actions para GitHub Pages
+- ✅ Teste o código diretamente no navegador sem instalar nada
+- 🎵 Demo interativa do YouTube Player online
+- 📖 Documentação completa ([GITHUB_PAGES.md](GITHUB_PAGES.md))
+- 🚀 Implantação automática em cada push para main/master
+
 ### v2.1 - Sistema de Código Admin
 - 🔐 Sistema secreto de código para operadores
 - ⚡ Adicione créditos instantaneamente sem pagamento
@@ -392,9 +418,11 @@ Contribuições são bem-vindas! Por favor:
 
 - 📧 Email: godfathercorleone994@gmail.com
 - 🐛 Issues: [GitHub Issues](https://github.com/godfathercorleone994-wq/Jukebox/issues)
+- 🌐 Demo Online: [GitHub Pages](https://godfathercorleone994-wq.github.io/Jukebox/)
 - 📖 Docs: 
   - [DEPLOY.md](DEPLOY.md) - Deploy em Raspberry Pi
   - [PC-LINUX.md](PC-LINUX.md) - Uso em PC/Linux
+  - [GITHUB_PAGES.md](GITHUB_PAGES.md) - Testes no navegador
   - [API.md](API.md) - API REST
   - [ADMIN_CODE.md](ADMIN_CODE.md) - Sistema de código admin
 
