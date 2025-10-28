@@ -703,7 +703,8 @@ def initialize_app():
 
 # ===== MAIN =====
 
-if __name__ == '__main__':
+def main():
+    """Entry point for the application"""
     initialize_app()
     
     app.run(
@@ -711,3 +712,7 @@ if __name__ == '__main__':
         port=FlaskConfig.PORT,
         debug=(FlaskConfig.ENV == 'development')
     )
+
+
+if __name__ == '__main__':
+    main()
