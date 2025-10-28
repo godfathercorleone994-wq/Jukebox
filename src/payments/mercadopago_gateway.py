@@ -4,8 +4,15 @@ Suporta PIX, Débito e Crédito
 """
 
 import logging
-import mercadopago
 from typing import Dict, Optional
+
+try:
+    import mercadopago
+    MERCADOPAGO_AVAILABLE = True
+except ImportError:
+    MERCADOPAGO_AVAILABLE = False
+    mercadopago = None
+
 from src.payments.base_gateway import BasePaymentGateway
 from src.server.config import PaymentMethod
 from src.payments import PaymentStatus
@@ -17,6 +24,9 @@ class MercadoPagoGateway(BasePaymentGateway):
     """Gateway de pagamento Mercado Pago"""
     
     def __init__(self, api_key: str, access_token: str):
+        if not MERCADOPAGO_AVAILABLE:
+            raise ImportError("Mercado Pago SDK não está instalado")
+        
         super().__init__(api_key, access_token)
         self.sdk = mercadopago.SDK(access_token)
         logger.info("Mercado Pago SDK inicializado")
@@ -142,6 +152,8 @@ def create_gateway(provider: str, api_key: str, access_token: str) -> BasePaymen
         Instância do gateway
     """
     if provider.lower() == "mercadopago":
+        if not MERCADOPAGO_AVAILABLE:
+            raise ImportError("Mercado Pago SDK não está instalado. Instale com: pip install mercadopago")
         return MercadoPagoGateway(api_key, access_token)
     else:
         raise ValueError(f"Provedor não suportado: {provider}")

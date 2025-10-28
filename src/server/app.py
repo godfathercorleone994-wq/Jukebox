@@ -22,13 +22,20 @@ load_dotenv()
 # Importa módulos do projeto
 from src.server.config import (
     FlaskConfig, BusinessConfig, PaymentMethod,
-    PaymentGatewayConfig, LogConfig, AdminConfig
+    PaymentGatewayConfig, LogConfig, AdminConfig, YouTubeConfig
 )
 from src.db import Database, Transaction, CreditBalance, MusicQueue
 from src.hardware import BillAcceptor
-from src.youtube import YouTubePlayer, IdleMusicManager
 from src.payments import PaymentStatus
 from src.payments.mercadopago_gateway import create_gateway
+
+# Importação opcional do YouTube player (para compatibilidade com código antigo)
+try:
+    from src.youtube import YouTubePlayer, IdleMusicManager
+except ImportError:
+    YouTubePlayer = None
+    IdleMusicManager = None
+    # Logger will be configured below, just log a warning after configuration
 
 # Configuração de logging
 os.makedirs(LogConfig.LOG_FILE.parent, exist_ok=True)
@@ -44,6 +51,10 @@ logging.basicConfig(
     handlers=[handler, logging.StreamHandler()]
 )
 logger = logging.getLogger(__name__)
+
+# Log warning if YouTube modules not available
+if YouTubePlayer is None:
+    logger.warning("YouTube modules não disponíveis - usando player iframe no frontend")
 
 # Inicializa Flask
 app = Flask(__name__)
@@ -414,9 +425,26 @@ def add_to_queue():
                 "required": price
             }), 402
         
-        # Verifica tamanho da fila
-        if music_queue.get_queue_size() >= BusinessConfig.MAX_QUEUE_SIZE:
-            return jsonify({"error": "Fila cheia"}), 429
+        # Calcula tamanho máximo da fila baseado nos créditos disponíveis APÓS a compra
+        # Como vamos deduzir o preço, precisamos garantir que ainda há espaço na fila
+        # Exemplo: balance=5.0, price=1.0, após compra balance=4.0, max_queue=4
+        # Isso significa que podemos ter até 5 músicas (a atual + 4 futuras)
+        current_queue_size = music_queue.get_queue_size()
+        balance_after_purchase = balance - price
+        max_queue_size_after = int(balance_after_purchase / price)
+        
+        # Verifica se adicionar esta música excederia o limite futuro
+        # current_queue_size é o tamanho atual da fila
+        # Após adicionar esta música, teremos current_queue_size + 1 músicas
+        # E o usuário terá balance_after_purchase créditos
+        # O usuário deve ter crédito suficiente para pagar pelas músicas que ficarem na fila
+        if current_queue_size >= max_queue_size_after + 1:
+            return jsonify({
+                "error": "Fila cheia. Limite baseado em créditos disponíveis",
+                "current_queue_size": current_queue_size,
+                "max_queue_size": max_queue_size_after + 1,  # Máximo permitido com os créditos atuais
+                "balance": balance
+            }), 429
         
         # Deduz crédito
         if not credit_balance.deduct_credit(price):
@@ -435,14 +463,18 @@ def add_to_queue():
             idle_music_manager.update_activity()
         
         # Se não há música tocando, pode começar a tocar esta imediatamente
-        queue = music_queue.get_queue()
+        queue = music_queue.get_queue(limit=100)  # Get all songs to count properly
         has_playing = any(song['status'] == 'playing' for song in queue)
+        
+        # Calcula posição na fila
+        # queue inclui músicas 'playing' e 'queued', e já inclui a música recém-adicionada
+        queue_position = len(queue)  # Total de músicas na fila (incluindo a atual)
         
         return jsonify({
             "message": "Música adicionada à fila",
             "song_id": song_id,
             "new_balance": credit_balance.get_balance(),
-            "queue_position": music_queue.get_queue_size(),
+            "queue_position": queue_position,  # Posição total na fila
             "will_play_immediately": not has_playing
         })
         
@@ -476,10 +508,46 @@ def get_queue():
         return safe_error_response("Erro ao obter fila de músicas", 500)
 
 
+@app.route('/api/music/complete', methods=['POST'])
+def complete_song():
+    """Marca música como concluída e retorna a próxima"""
+    try:
+        data = request.json
+        song_id = data.get('song_id')
+        
+        if song_id:
+            # Marca a música atual como tocada
+            music_queue.mark_as_played(song_id)
+            logger.info(f"Música {song_id} marcada como concluída")
+        
+        # Busca próxima música na fila
+        next_song = music_queue.get_next_song()
+        
+        if not next_song:
+            return jsonify({
+                "message": "Fila vazia",
+                "next_song": None
+            })
+        
+        # Marca a próxima música como tocando
+        music_queue.mark_as_playing(next_song['id'])
+        
+        logger.info(f"Próxima música: {next_song['title']} (ID: {next_song['id']})")
+        
+        return jsonify({
+            "message": "Próxima música carregada",
+            "next_song": next_song
+        })
+        
+    except Exception as e:
+        logger.error(f"Erro ao processar próxima música: {e}")
+        return safe_error_response("Erro ao processar próxima música", 500)
+
+
 @app.route('/api/music/next', methods=['POST'])
 @require_hardware_token
 def play_next():
-    """Toca próxima música da fila"""
+    """Toca próxima música da fila (endpoint para hardware)"""
     try:
         next_song = music_queue.get_next_song()
         
