@@ -26,4 +26,7 @@ android {
 }
 
 dependencies {
+    // No AndroidX dependencies required for basic WebView functionality
+    // This keeps the APK size small and build simple
+    // Add implementation 'androidx.appcompat:appcompat:1.6.1' if you need AppCompat features
 }
