@@ -10,6 +10,8 @@ jobs:
   build-linux:
     name: Build Linux Executable
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
     - name: Checkout code
@@ -44,6 +46,8 @@ jobs:
   build-windows:
     name: Build Windows Executable
     runs-on: windows-latest
+    permissions:
+      contents: read
     
     steps:
     - name: Checkout code
@@ -79,6 +83,8 @@ jobs:
     needs: [build-linux, build-windows]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
     
     steps:
     - name: Checkout code
@@ -97,7 +103,7 @@ jobs:
         path: artifacts-windows
     
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: |
           artifacts-linux/jukebox-linux-x64.tar.gz
