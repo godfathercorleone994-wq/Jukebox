@@ -62,3 +62,7 @@ build/
 dist/
 *.manifest
 *.spec~
+
+# === INSTALLERS ===
+installers/
+debian/
