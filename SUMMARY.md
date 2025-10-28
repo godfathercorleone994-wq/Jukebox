@@ -14,7 +14,7 @@ A aplicação completa do Jukebox-Pi-Money foi desenvolvida e testada com sucess
 - **CORS configurado** para desenvolvimento e produção
 
 ### 💰 Sistema de Pagamentos
-- **4 métodos de pagamento**: Dinheiro, PIX, Débito, Crédito
+- **4 métodos de pagamento**: Dinheiro, PIX (pagamento instantâneo brasileiro), Débito, Crédito
 - **Integração com Mercado Pago** completa
 - **QR Code PIX** gerado automaticamente
 - **Webhooks** para notificações de pagamento
@@ -64,11 +64,12 @@ Total: 4/4 testes passaram
 
 ## 📊 Estatísticas
 
-- **12 módulos Python** (~2.500 linhas de código)
-- **3 arquivos frontend** (HTML, CSS, JS - ~24.000 caracteres)
+- **12 módulos Python** (1.774 linhas de código)
+- **3 arquivos frontend** (HTML, CSS, JS - 1.007 linhas de código)
+- **4 guias de documentação** (1.274 linhas)
+- **Total**: 4.055 linhas de código
 - **13 endpoints REST API** funcionais
 - **4 métodos de pagamento** integrados
-- **3 guias de documentação** (22KB+)
 - **1 script de inicialização** automático
 
 ## 🚀 Como usar
