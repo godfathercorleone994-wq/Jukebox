@@ -12,6 +12,7 @@ Sistema embarcado de Jukebox com aceitador de notas e YouTube Music para Raspber
 - 🚫 **Bloqueio de anúncios**: Sistema avançado de ad-blocking integrado
 - 📱 **Interface touchscreen responsiva** com design moderno
 - ⌨️ **Navegação completa por teclado**: Funciona sem mouse ou touchscreen
+- 🔐 **Código de operador**: Sistema secreto para adicionar créditos sem pagamento
 - 🖥️ **Suporte para PC/Linux**: Não requer Raspberry Pi para desenvolvimento/testes
 - 💾 **Banco de dados SQLite** para logs, transações e histórico
 - 🔒 **API REST completa** protegida por token
@@ -273,6 +274,32 @@ Ideal para:
 - ♿ Acessibilidade
 - 🎮 Controle tipo console
 
+## 🔐 Código de Operador (Admin)
+
+Sistema exclusivo para operadores adicionarem créditos sem pagamento:
+
+### Ativação
+Pressione **Ctrl+Shift+A** na tela principal para abrir o modal secreto.
+
+### Configuração
+Configure o código no arquivo `.env`:
+
+```bash
+ADMIN_ENABLED=true
+ADMIN_CODE=seu_codigo_secreto_aqui
+ADMIN_CREDIT_AMOUNT=20.00
+```
+
+### Uso
+1. Pressione **Ctrl+Shift+A**
+2. Digite o código secreto
+3. Créditos são adicionados instantaneamente
+4. Use para tocar músicas sem pagar
+
+**⚠️ IMPORTANTE**: Mantenha o código em segredo! Apenas operadores devem ter acesso.
+
+📖 **Documentação completa**: [ADMIN_CODE.md](ADMIN_CODE.md)
+
 ## 💡 Exemplos de Uso
 
 ### Simular inserção de dinheiro (desenvolvimento)
@@ -334,6 +361,14 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 
 ## 🌟 Novidades
 
+### v2.1 - Sistema de Código Admin
+- 🔐 Sistema secreto de código para operadores
+- ⚡ Adicione créditos instantaneamente sem pagamento
+- 🎵 Toque músicas específicas sem inserir dinheiro
+- 📝 Auditoria completa de transações admin
+- ⌨️ Ativação via atalho de teclado (Ctrl+Shift+A)
+- 🔒 Validação segura no backend
+
 ### v2.0 - Suporte PC/Linux e Navegação por Teclado
 - ✨ Novo script `start-pc.sh` para executar em qualquer PC/Linux
 - ⌨️ Navegação completa por teclado (setas, Enter, Tab, números)
@@ -361,6 +396,7 @@ Contribuições são bem-vindas! Por favor:
   - [DEPLOY.md](DEPLOY.md) - Deploy em Raspberry Pi
   - [PC-LINUX.md](PC-LINUX.md) - Uso em PC/Linux
   - [API.md](API.md) - API REST
+  - [ADMIN_CODE.md](ADMIN_CODE.md) - Sistema de código admin
 
 ## 🙏 Agradecimentos
 

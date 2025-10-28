@@ -625,6 +625,108 @@ function addAnotherSong() {
     refreshQueue();
 }
 
+// ===== ADMIN CODE =====
+
+// Detecta combinação de teclas para abrir modal admin
+let keySequence = [];
+const ADMIN_SHORTCUT = ['Control', 'Shift', 'A']; // Ctrl+Shift+A
+const SEQUENCE_TIMEOUT = 2000; // 2 segundos para completar sequência
+let sequenceTimer = null;
+
+function openAdminModal() {
+    const modal = document.getElementById('admin-modal');
+    modal.style.display = 'flex';
+    
+    // Foca no input
+    setTimeout(() => {
+        const input = document.getElementById('admin-code-input');
+        input.value = '';
+        input.focus();
+        
+        // Listener para Enter no input
+        input.onkeypress = (e) => {
+            if (e.key === 'Enter') {
+                submitAdminCode();
+            }
+        };
+    }, 100);
+    
+    // Esconde erro anterior
+    document.getElementById('admin-error').style.display = 'none';
+}
+
+function closeAdminModal() {
+    const modal = document.getElementById('admin-modal');
+    modal.style.display = 'none';
+    document.getElementById('admin-code-input').value = '';
+    document.getElementById('admin-error').style.display = 'none';
+}
+
+async function submitAdminCode() {
+    const input = document.getElementById('admin-code-input');
+    const code = input.value.trim();
+    const errorEl = document.getElementById('admin-error');
+    
+    if (!code) {
+        errorEl.textContent = 'Por favor, digite um código';
+        errorEl.style.display = 'block';
+        return;
+    }
+    
+    try {
+        showLoading();
+        
+        const response = await fetch(`${API_BASE}/admin/add-credits`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ code })
+        });
+        
+        const data = await response.json();
+        hideLoading();
+        
+        if (response.ok && data.success) {
+            // Sucesso - atualiza saldo e fecha modal
+            updateBalanceDisplays(data.new_balance);
+            closeAdminModal();
+            
+            // Mostra mensagem de sucesso
+            alert(`✅ Créditos adicionados!\nValor: R$ ${data.amount.toFixed(2)}\nNovo saldo: R$ ${data.new_balance.toFixed(2)}`);
+            
+            console.log('Admin credits added:', data);
+        } else {
+            // Erro - mostra mensagem
+            errorEl.textContent = data.error || 'Código inválido';
+            errorEl.style.display = 'block';
+            input.value = '';
+            input.focus();
+        }
+        
+    } catch (error) {
+        hideLoading();
+        console.error('Erro ao enviar código admin:', error);
+        errorEl.textContent = 'Erro ao processar código';
+        errorEl.style.display = 'block';
+    }
+}
+
+// Detecta sequência de teclas para abrir modal
+function detectAdminShortcut(e) {
+    // Adiciona tecla à sequência
+    if (e.key === 'Control' || e.key === 'Shift' || e.key === 'a' || e.key === 'A') {
+        // Verifica se as teclas modificadoras estão pressionadas
+        if (e.ctrlKey && e.shiftKey && (e.key === 'a' || e.key === 'A')) {
+            e.preventDefault();
+            openAdminModal();
+        }
+    }
+}
+
+// Adiciona listener para atalho admin ao init
+document.addEventListener('keydown', detectAdminShortcut);
+
 // ===== INICIALIZA APP =====
 
 window.addEventListener('DOMContentLoaded', init);

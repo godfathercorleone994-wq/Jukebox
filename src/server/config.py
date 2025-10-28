@@ -125,6 +125,21 @@ class FlaskConfig:
     CORS_ORIGINS = os.getenv('CORS_ORIGINS', '*')
 
 
+# === CONFIGURAÇÕES DE ADMINISTRADOR ===
+class AdminConfig:
+    """Configurações para acesso administrativo"""
+    
+    # Código secreto para adicionar créditos sem pagamento
+    # Apenas operadores devem conhecer este código
+    ADMIN_CODE = os.getenv('ADMIN_CODE', '1234')
+    
+    # Quantidade de créditos a adicionar quando código é usado
+    ADMIN_CREDIT_AMOUNT = float(os.getenv('ADMIN_CREDIT_AMOUNT', '20.00'))
+    
+    # Habilitar funcionalidade de código admin
+    ADMIN_ENABLED = os.getenv('ADMIN_ENABLED', 'true').lower() == 'true'
+
+
 # === CONFIGURAÇÕES DO YOUTUBE ===
 class YouTubeConfig:
     """Configurações do player YouTube com Selenium"""
