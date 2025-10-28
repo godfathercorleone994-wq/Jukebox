@@ -8,6 +8,13 @@ let paymentCheckInterval = null;
 // API Base URL
 const API_BASE = '/api';
 
+// Estado da navegação por teclado
+let keyboardNavigation = {
+    enabled: true,
+    currentFocus: 0,
+    focusableElements: []
+};
+
 // ===== UTILITÁRIOS =====
 
 function showScreen(screenId) {
@@ -15,6 +22,9 @@ function showScreen(screenId) {
         screen.classList.remove('active');
     });
     document.getElementById(screenId).classList.add('active');
+    
+    // Atualiza elementos focáveis quando troca de tela
+    setTimeout(() => updateFocusableElements(), 100);
 }
 
 function showLoading() {
@@ -51,8 +61,211 @@ async function init() {
         }
     });
     
+    // Inicializa navegação por teclado
+    initKeyboardNavigation();
+    
     // Auto-refresh de status a cada 10 segundos
     setInterval(refreshStatus, 10000);
+}
+
+// ===== NAVEGAÇÃO POR TECLADO =====
+
+function initKeyboardNavigation() {
+    console.log('Inicializando navegação por teclado...');
+    
+    // Listener global para teclas
+    document.addEventListener('keydown', handleKeyboardNavigation);
+    
+    // Atualiza elementos focáveis
+    updateFocusableElements();
+    
+    console.log('Navegação por teclado ativa! Use setas, Enter, Tab e números (1-9)');
+}
+
+function handleKeyboardNavigation(e) {
+    // Ignora se estiver digitando em um input de texto
+    if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
+        // Permite Esc para sair do input
+        if (e.key === 'Escape') {
+            e.target.blur();
+            updateFocusableElements();
+        }
+        return;
+    }
+    
+    const key = e.key;
+    
+    // F1 ou ? para mostrar/ocultar ajuda de teclado
+    if (key === 'F1' || key === '?') {
+        e.preventDefault();
+        toggleKeyboardHints();
+        return;
+    }
+    
+    // Navegação com setas
+    if (key === 'ArrowUp' || key === 'ArrowDown' || key === 'ArrowLeft' || key === 'ArrowRight') {
+        e.preventDefault();
+        navigateWithArrows(key);
+    }
+    // Enter ou Espaço para ativar elemento focado
+    else if (key === 'Enter' || key === ' ') {
+        e.preventDefault();
+        activateFocusedElement();
+    }
+    // Tab para próximo elemento
+    else if (key === 'Tab') {
+        e.preventDefault();
+        moveFocus(e.shiftKey ? -1 : 1);
+    }
+    // Números 1-9 para seleção rápida
+    else if (key >= '1' && key <= '9') {
+        e.preventDefault();
+        const index = parseInt(key) - 1;
+        if (index < keyboardNavigation.focusableElements.length) {
+            keyboardNavigation.currentFocus = index;
+            focusCurrentElement();
+            activateFocusedElement();
+        }
+    }
+    // H para ir ao início (Home)
+    else if (key === 'h' || key === 'H') {
+        e.preventDefault();
+        goToHome();
+    }
+    // Esc para voltar ou cancelar
+    else if (key === 'Escape') {
+        e.preventDefault();
+        handleEscape();
+    }
+    // F5 ou R para atualizar
+    else if ((key === 'F5') || (key === 'r' || key === 'R')) {
+        if (key !== 'F5') e.preventDefault();
+        refreshStatus();
+    }
+}
+
+function toggleKeyboardHints() {
+    const hints = document.getElementById('keyboard-hints');
+    if (hints.style.display === 'none') {
+        hints.style.display = 'block';
+    } else {
+        hints.style.display = 'none';
+    }
+}
+
+function navigateWithArrows(key) {
+    const elements = keyboardNavigation.focusableElements;
+    if (elements.length === 0) return;
+    
+    // Para setas verticais, move um elemento por vez
+    if (key === 'ArrowUp') {
+        moveFocus(-1);
+    } else if (key === 'ArrowDown') {
+        moveFocus(1);
+    }
+    // Para setas horizontais, tenta mover na mesma linha
+    else if (key === 'ArrowLeft') {
+        moveFocus(-1);
+    } else if (key === 'ArrowRight') {
+        moveFocus(1);
+    }
+}
+
+function moveFocus(direction) {
+    const elements = keyboardNavigation.focusableElements;
+    if (elements.length === 0) return;
+    
+    keyboardNavigation.currentFocus += direction;
+    
+    // Wrap around
+    if (keyboardNavigation.currentFocus < 0) {
+        keyboardNavigation.currentFocus = elements.length - 1;
+    } else if (keyboardNavigation.currentFocus >= elements.length) {
+        keyboardNavigation.currentFocus = 0;
+    }
+    
+    focusCurrentElement();
+}
+
+function focusCurrentElement() {
+    const elements = keyboardNavigation.focusableElements;
+    
+    // Remove foco visual de todos
+    elements.forEach(el => el.classList.remove('keyboard-focus'));
+    
+    // Adiciona foco visual ao elemento atual
+    if (elements[keyboardNavigation.currentFocus]) {
+        const el = elements[keyboardNavigation.currentFocus];
+        el.classList.add('keyboard-focus');
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function activateFocusedElement() {
+    const elements = keyboardNavigation.focusableElements;
+    const el = elements[keyboardNavigation.currentFocus];
+    
+    if (el) {
+        // Se for um botão ou elemento clicável
+        if (el.onclick) {
+            el.onclick();
+        } else if (el.tagName === 'BUTTON' || el.tagName === 'A') {
+            el.click();
+        } else if (el.tagName === 'INPUT') {
+            el.focus();
+        }
+    }
+}
+
+function updateFocusableElements() {
+    // Encontra todos os elementos interativos na tela ativa
+    const activeScreen = document.querySelector('.screen.active');
+    if (!activeScreen) return;
+    
+    const selectors = [
+        'button:not([disabled])',
+        '.payment-method',
+        '.search-result',
+        'input[type="text"]',
+        '.queue-item',
+        'a'
+    ];
+    
+    keyboardNavigation.focusableElements = Array.from(
+        activeScreen.querySelectorAll(selectors.join(','))
+    ).filter(el => {
+        // Filtra elementos visíveis
+        const style = window.getComputedStyle(el);
+        return style.display !== 'none' && style.visibility !== 'hidden';
+    });
+    
+    // Reset foco
+    keyboardNavigation.currentFocus = 0;
+    
+    // Foca primeiro elemento se houver
+    if (keyboardNavigation.focusableElements.length > 0) {
+        focusCurrentElement();
+    }
+    
+    console.log(`Elementos focáveis: ${keyboardNavigation.focusableElements.length}`);
+}
+
+function handleEscape() {
+    const activeScreenId = document.querySelector('.screen.active').id;
+    
+    switch(activeScreenId) {
+        case 'screen-waiting-payment':
+            cancelPayment();
+            break;
+        case 'screen-search-music':
+        case 'screen-success':
+        case 'screen-error':
+            goToHome();
+            break;
+        default:
+            // Na tela inicial, não faz nada
+            break;
+    }
 }
 
 // ===== STATUS DO SISTEMA =====
@@ -85,10 +298,13 @@ async function loadPaymentMethods() {
         const container = document.getElementById('payment-methods-container');
         container.innerHTML = '';
         
-        data.methods.forEach(method => {
-            const methodEl = createPaymentMethodElement(method);
+        data.methods.forEach((method, index) => {
+            const methodEl = createPaymentMethodElement(method, index);
             container.appendChild(methodEl);
         });
+        
+        // Atualiza elementos focáveis após carregar
+        updateFocusableElements();
         
     } catch (error) {
         console.error('Erro ao carregar métodos de pagamento:', error);
@@ -96,10 +312,11 @@ async function loadPaymentMethods() {
     }
 }
 
-function createPaymentMethodElement(method) {
+function createPaymentMethodElement(method, index) {
     const div = document.createElement('div');
     div.className = 'payment-method';
     div.onclick = () => selectPaymentMethod(method.method, method.price);
+    div.setAttribute('data-keyboard-hint', index + 1);
     
     const icons = {
         'cash': '💵',
@@ -116,6 +333,7 @@ function createPaymentMethodElement(method) {
     };
     
     div.innerHTML = `
+        <div class="keyboard-number">${index + 1}</div>
         <div class="icon">${icons[method.method] || '💰'}</div>
         <div class="name">${names[method.method] || method.method}</div>
         <div class="price">R$ ${method.price.toFixed(2)}</div>
@@ -289,6 +507,9 @@ function displaySearchResult(result) {
     `;
     
     container.appendChild(resultEl);
+    
+    // Atualiza elementos focáveis após adicionar resultado
+    updateFocusableElements();
 }
 
 // ===== FILA DE MÚSICAS =====
