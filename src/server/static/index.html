@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎵 Jukebox-Pi-Money</title>
     <link rel="stylesheet" href="/static/style.css">
+    <!-- YouTube IFrame Player API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 <body>
     <!-- Tela 1: Inicial / Seleção de Pagamento -->
@@ -73,6 +75,15 @@
         </div>
         
         <div class="content">
+            <!-- YouTube Player -->
+            <div class="youtube-player-container">
+                <div id="youtube-player"></div>
+                <div id="now-playing-info" class="now-playing-info" style="display: none;">
+                    <div class="now-playing-label">▶️ Tocando agora:</div>
+                    <div id="now-playing-title" class="now-playing-title"></div>
+                </div>
+            </div>
+            
             <h2>Buscar Música</h2>
             
             <div class="search-box">

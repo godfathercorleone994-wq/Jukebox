@@ -414,9 +414,19 @@ def add_to_queue():
                 "required": price
             }), 402
         
-        # Verifica tamanho da fila
-        if music_queue.get_queue_size() >= BusinessConfig.MAX_QUEUE_SIZE:
-            return jsonify({"error": "Fila cheia"}), 429
+        # Calcula tamanho máximo da fila baseado nos créditos disponíveis
+        # 1 crédito = 1 música na fila (R$ 1,00 por música)
+        max_queue_size = int(balance / price)
+        current_queue_size = music_queue.get_queue_size()
+        
+        # Verifica se a fila já atingiu o limite baseado nos créditos
+        if current_queue_size >= max_queue_size:
+            return jsonify({
+                "error": "Fila cheia. Limite baseado em créditos disponíveis",
+                "current_queue_size": current_queue_size,
+                "max_queue_size": max_queue_size,
+                "balance": balance
+            }), 429
         
         # Deduz crédito
         if not credit_balance.deduct_credit(price):
@@ -476,10 +486,46 @@ def get_queue():
         return safe_error_response("Erro ao obter fila de músicas", 500)
 
 
+@app.route('/api/music/complete', methods=['POST'])
+def complete_song():
+    """Marca música como concluída e retorna a próxima"""
+    try:
+        data = request.json
+        song_id = data.get('song_id')
+        
+        if song_id:
+            # Marca a música atual como tocada
+            music_queue.mark_as_played(song_id)
+            logger.info(f"Música {song_id} marcada como concluída")
+        
+        # Busca próxima música na fila
+        next_song = music_queue.get_next_song()
+        
+        if not next_song:
+            return jsonify({
+                "message": "Fila vazia",
+                "next_song": None
+            })
+        
+        # Marca a próxima música como tocando
+        music_queue.mark_as_playing(next_song['id'])
+        
+        logger.info(f"Próxima música: {next_song['title']} (ID: {next_song['id']})")
+        
+        return jsonify({
+            "message": "Próxima música carregada",
+            "next_song": next_song
+        })
+        
+    except Exception as e:
+        logger.error(f"Erro ao processar próxima música: {e}")
+        return safe_error_response("Erro ao processar próxima música", 500)
+
+
 @app.route('/api/music/next', methods=['POST'])
 @require_hardware_token
 def play_next():
-    """Toca próxima música da fila"""
+    """Toca próxima música da fila (endpoint para hardware)"""
     try:
         next_song = music_queue.get_next_song()
         

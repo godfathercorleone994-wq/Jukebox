@@ -15,6 +15,129 @@ let keyboardNavigation = {
     focusableElements: []
 };
 
+// YouTube Player
+let youtubePlayer = null;
+let isYouTubeAPIReady = false;
+let currentPlayingSongId = null;
+
+// ===== YOUTUBE PLAYER =====
+
+// Callback para quando a API do YouTube estiver pronta
+function onYouTubeIframeAPIReady() {
+    console.log('YouTube IFrame API pronta');
+    isYouTubeAPIReady = true;
+    initYouTubePlayer();
+}
+
+function initYouTubePlayer() {
+    if (!isYouTubeAPIReady) {
+        console.log('Aguardando YouTube API...');
+        return;
+    }
+    
+    youtubePlayer = new YT.Player('youtube-player', {
+        height: '100%',
+        width: '100%',
+        playerVars: {
+            'autoplay': 1,
+            'controls': 1,
+            'modestbranding': 1,
+            'rel': 0,
+            'showinfo': 0
+        },
+        events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+        }
+    });
+    
+    console.log('YouTube Player inicializado');
+}
+
+function onPlayerReady(event) {
+    console.log('YouTube Player pronto para usar');
+}
+
+function onPlayerStateChange(event) {
+    // YT.PlayerState.ENDED = 0
+    // YT.PlayerState.PLAYING = 1
+    // YT.PlayerState.PAUSED = 2
+    
+    if (event.data === YT.PlayerState.ENDED) {
+        console.log('Música terminou, carregando próxima...');
+        playNextInQueue();
+    } else if (event.data === YT.PlayerState.PLAYING) {
+        console.log('Música tocando');
+    }
+}
+
+async function playVideo(videoId, title) {
+    if (!youtubePlayer || !youtubePlayer.loadVideoById) {
+        console.error('YouTube Player não está pronto');
+        return false;
+    }
+    
+    try {
+        youtubePlayer.loadVideoById(videoId);
+        
+        // Atualiza informações de "tocando agora"
+        const nowPlayingInfo = document.getElementById('now-playing-info');
+        const nowPlayingTitle = document.getElementById('now-playing-title');
+        
+        if (nowPlayingInfo && nowPlayingTitle) {
+            nowPlayingTitle.textContent = title;
+            nowPlayingInfo.style.display = 'block';
+        }
+        
+        console.log(`Tocando: ${title} (${videoId})`);
+        return true;
+    } catch (error) {
+        console.error('Erro ao tocar vídeo:', error);
+        return false;
+    }
+}
+
+async function playNextInQueue() {
+    try {
+        // Marca a música atual como concluída e busca a próxima
+        const response = await fetch(`${API_BASE}/music/complete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                song_id: currentPlayingSongId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.next_song) {
+            // Toca a próxima música
+            currentPlayingSongId = data.next_song.id;
+            await playVideo(data.next_song.video_id, data.next_song.title);
+            
+            // Atualiza a fila na interface
+            await refreshQueue();
+        } else {
+            console.log('Fila vazia, nenhuma música para tocar');
+            currentPlayingSongId = null;
+            
+            // Esconde informações de "tocando agora"
+            const nowPlayingInfo = document.getElementById('now-playing-info');
+            if (nowPlayingInfo) {
+                nowPlayingInfo.style.display = 'none';
+            }
+        }
+        
+    } catch (error) {
+        console.error('Erro ao tocar próxima música:', error);
+    }
+}
+
+// Torna a função disponível globalmente para o YouTube API
+window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+
 // ===== UTILITÁRIOS =====
 
 function showScreen(screenId) {
@@ -53,6 +176,12 @@ async function init() {
     console.log('Inicializando Jukebox...');
     await refreshStatus();
     await loadPaymentMethods();
+    
+    // Inicializa YouTube Player se API já estiver carregada
+    if (typeof YT !== 'undefined' && YT.Player) {
+        isYouTubeAPIReady = true;
+        // Não inicializa o player ainda, será inicializado quando entrar na tela de busca
+    }
     
     // Adiciona listener para Enter na busca
     document.getElementById('search-input').addEventListener('keypress', (e) => {
@@ -351,7 +480,17 @@ async function selectPaymentMethod(method, price) {
         await refreshStatus(); // Atualiza saldo
         hideLoading();
         showScreen('screen-search-music');
+        
+        // Inicializa YouTube Player se ainda não foi inicializado
+        if (!youtubePlayer && isYouTubeAPIReady) {
+            initYouTubePlayer();
+        }
+        
         await refreshQueue();
+        
+        // Verifica se há músicas na fila e começa a tocar a primeira
+        await checkAndPlayQueue();
+        
         return;
     }
     
@@ -440,7 +579,56 @@ async function checkPaymentStatus(transactionId) {
 async function onPaymentApproved() {
     await refreshStatus();
     showScreen('screen-search-music');
+    
+    // Inicializa YouTube Player se ainda não foi inicializado
+    if (!youtubePlayer && isYouTubeAPIReady) {
+        initYouTubePlayer();
+    }
+    
     await refreshQueue();
+    
+    // Verifica se há músicas na fila e começa a tocar a primeira
+    await checkAndPlayQueue();
+}
+
+async function checkAndPlayQueue() {
+    try {
+        const response = await fetch(`${API_BASE}/music/queue`);
+        const data = await response.json();
+        
+        if (data.queue && data.queue.length > 0) {
+            // Verifica se já há uma música tocando
+            const playingSong = data.queue.find(song => song.status === 'playing');
+            
+            if (!playingSong) {
+                // Busca a primeira música na fila e começa a tocar
+                const firstSong = data.queue[0];
+                if (firstSong.status === 'queued') {
+                    currentPlayingSongId = firstSong.id;
+                    
+                    // Marca como tocando no backend
+                    await fetch(`${API_BASE}/music/complete`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ song_id: null })
+                    });
+                    
+                    // Toca o vídeo
+                    await playVideo(firstSong.video_id, firstSong.title);
+                    
+                    console.log('Primeira música da fila começando:', firstSong.title);
+                }
+            } else {
+                // Já tem uma música tocando, atualiza o player se necessário
+                currentPlayingSongId = playingSong.id;
+                console.log('Já há uma música tocando:', playingSong.title);
+            }
+        }
+    } catch (error) {
+        console.error('Erro ao verificar fila:', error);
+    }
 }
 
 function cancelPayment() {
@@ -552,6 +740,14 @@ async function addMusicToQueue(music) {
         if (successMessage) {
             if (data.will_play_immediately) {
                 successMessage.textContent = '🎵 Sua música vai tocar agora!';
+                
+                // Se for tocar imediatamente, inicia o playback
+                currentPlayingSongId = data.song_id;
+                
+                // Aguarda um pouco para marcar como tocando e iniciar
+                setTimeout(async () => {
+                    await playVideo(music.video_id, music.title);
+                }, 500);
             } else {
                 successMessage.textContent = `🎵 Música adicionada à fila! Posição: ${data.queue_position}`;
             }
