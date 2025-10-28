@@ -251,34 +251,32 @@
             try {
                 const url = new URL(input);
                 
-                // Standard youtube.com/watch?v=VIDEO_ID
-                if (url.hostname.includes('youtube.com')) {
+                // Validate hostname is exactly youtube.com or www.youtube.com
+                if (url.hostname === 'youtube.com' || url.hostname === 'www.youtube.com' || url.hostname === 'm.youtube.com') {
                     const videoId = url.searchParams.get('v');
-                    if (videoId) return videoId;
+                    if (videoId && /^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
+                        return videoId;
+                    }
                 }
                 
-                // Short form youtu.be/VIDEO_ID
-                if (url.hostname.includes('youtu.be')) {
-                    const videoId = url.pathname.slice(1);
-                    if (videoId) return videoId;
+                // Validate hostname is exactly youtu.be
+                if (url.hostname === 'youtu.be') {
+                    const videoId = url.pathname.slice(1).split('?')[0];
+                    if (videoId && /^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
+                        return videoId;
+                    }
                 }
             } catch (e) {
                 // Not a valid URL, might still be a video ID
             }
             
-            // Try to extract ID from various formats
-            const patterns = [
-                /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
-                /^([a-zA-Z0-9_-]{11})$/
-            ];
-            
-            for (const pattern of patterns) {
-                const match = input.match(pattern);
-                if (match && match[1]) {
-                    return match[1];
-                }
+            // If not a URL, check if it's just a video ID (11 characters, alphanumeric and -_)
+            // This is redundant with the check at the top but kept for clarity
+            if (/^[a-zA-Z0-9_-]{11}$/.test(input)) {
+                return input;
             }
             
+            return null;
             return null;
         }
 
