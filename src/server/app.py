@@ -422,7 +422,7 @@ def add_to_queue():
         if not credit_balance.deduct_credit(price):
             return jsonify({"error": "Erro ao deduzir crédito"}), 500
         
-        # Adiciona à fila
+        # Adiciona à fila (com status 'queued' - não interrompe música atual)
         song_id = music_queue.add_song(
             video_id=video_id,
             title=title,
@@ -434,10 +434,16 @@ def add_to_queue():
         if idle_music_manager:
             idle_music_manager.update_activity()
         
+        # Se não há música tocando, pode começar a tocar esta imediatamente
+        queue = music_queue.get_queue()
+        has_playing = any(song['status'] == 'playing' for song in queue)
+        
         return jsonify({
             "message": "Música adicionada à fila",
             "song_id": song_id,
-            "new_balance": credit_balance.get_balance()
+            "new_balance": credit_balance.get_balance(),
+            "queue_position": music_queue.get_queue_size(),
+            "will_play_immediately": not has_playing
         })
         
     except Exception as e:
@@ -450,7 +456,21 @@ def get_queue():
     """Retorna fila de músicas"""
     try:
         queue = music_queue.get_queue()
-        return jsonify({"queue": queue})
+        queue_size = music_queue.get_queue_size()
+        
+        # Busca música atualmente tocando
+        current_song = None
+        if queue and len(queue) > 0:
+            for song in queue:
+                if song['status'] == 'playing':
+                    current_song = song
+                    break
+        
+        return jsonify({
+            "queue": queue,
+            "queue_size": queue_size,
+            "current_song": current_song
+        })
     except Exception as e:
         logger.error(f"Erro ao obter fila: {e}")
         return safe_error_response("Erro ao obter fila de músicas", 500)

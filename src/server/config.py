@@ -63,7 +63,7 @@ class BusinessConfig:
     """Regras de negócio da Jukebox"""
     
     # Preço base por música
-    PRICE_PER_SONG = float(os.getenv('PRICE_PER_SONG', '5.00'))
+    PRICE_PER_SONG = float(os.getenv('PRICE_PER_SONG', '1.00'))
     
     # Taxa adicional para cartão de crédito (percentual)
     CREDIT_CARD_FEE = float(os.getenv('CREDIT_CARD_FEE', '3.99'))  # 3.99%
@@ -168,6 +168,9 @@ class YouTubeConfig:
     
     # Habilitar ad-blocking avançado
     ADBLOCK_ENABLED = os.getenv('ADBLOCK_ENABLED', 'true').lower() == 'true'
+    
+    # Habilitar reprodução de vídeo (se desabilitado, apenas reproduz áudio)
+    VIDEO_PLAYBACK_ENABLED = os.getenv('VIDEO_PLAYBACK_ENABLED', 'true').lower() == 'true'
 
 
 # === CONFIGURAÇÕES DO BANCO DE DADOS ===
