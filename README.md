@@ -47,6 +47,10 @@ pip install -r requirements.txt
 cp env.example .env
 nano .env  # Edite com suas configurações
 
+# IMPORTANTE: Para ativar YouTube e música idle
+# Configure no .env: YOUTUBE_ENABLED=true
+# (Requer display conectado ao Raspberry Pi)
+
 # Execute testes
 python3 tests/test_jukebox.py
 

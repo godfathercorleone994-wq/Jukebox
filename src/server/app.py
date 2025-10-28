@@ -71,14 +71,24 @@ def init_hardware():
     bill_acceptor = BillAcceptor(callback=on_cash_received)
     logger.info("Bill acceptor inicializado")
     
-    # Inicializa YouTube player (comentado para evitar erro sem display)
-    # youtube_player = YouTubePlayer()
-    # logger.info("YouTube player inicializado")
+    # Inicializa YouTube player se habilitado
+    # Requer display conectado - desabilite se rodando em ambiente sem GUI
+    youtube_enabled = os.getenv('YOUTUBE_ENABLED', 'false').lower() == 'true'
     
-    # Inicializa gerenciador de música idle
-    # idle_music_manager = IdleMusicManager(youtube_player)
-    # idle_music_manager.start()
-    # logger.info("Idle music manager inicializado")
+    if youtube_enabled:
+        try:
+            youtube_player = YouTubePlayer()
+            logger.info("YouTube player inicializado")
+            
+            # Inicializa gerenciador de música idle
+            idle_music_manager = IdleMusicManager(youtube_player)
+            idle_music_manager.start()
+            logger.info("Idle music manager inicializado")
+        except Exception as e:
+            logger.error(f"Erro ao inicializar YouTube/Idle Music: {e}")
+            logger.warning("Sistema funcionará sem YouTube player")
+    else:
+        logger.info("YouTube player desabilitado (YOUTUBE_ENABLED=false)")
 
 
 def init_payment_gateway():

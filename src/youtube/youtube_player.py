@@ -74,7 +74,10 @@ class YouTubePlayer:
             if self.config.ADBLOCK_ENABLED:
                 self._inject_adblock_script()
             
-            logger.info("Chrome WebDriver inicializado com ad-blocking")
+            log_msg = "Chrome WebDriver inicializado"
+            if self.config.ADBLOCK_ENABLED:
+                log_msg += " com ad-blocking"
+            logger.info(log_msg)
             
         except Exception as e:
             logger.error(f"Erro ao inicializar WebDriver: {e}")

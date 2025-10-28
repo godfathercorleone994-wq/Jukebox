@@ -12,6 +12,11 @@ from src.server.config import YouTubeConfig
 
 logger = logging.getLogger(__name__)
 
+# Constantes de configuração
+MONITOR_INTERVAL_SECONDS = 30  # Intervalo de verificação do monitor
+IDLE_RETRY_FACTOR = 0.5  # Fator para calcular próximo retry (metade do timeout)
+THREAD_SHUTDOWN_TIMEOUT = 5  # Timeout para desligar thread em segundos
+
 
 class IdleMusicManager:
     """
@@ -85,10 +90,10 @@ class IdleMusicManager:
                     # Atualiza atividade para evitar múltiplas reproduções seguidas
                     # Aguarda pelo menos metade do timeout antes da próxima música
                     self.update_activity()
-                    time.sleep(self.config.IDLE_MUSIC_TIMEOUT / 2)
+                    time.sleep(self.config.IDLE_MUSIC_TIMEOUT * IDLE_RETRY_FACTOR)
                 else:
-                    # Verifica a cada 30 segundos
-                    time.sleep(30)
+                    # Verifica a cada intervalo configurado
+                    time.sleep(MONITOR_INTERVAL_SECONDS)
                     
             except Exception as e:
                 logger.error(f"Erro no loop de monitoramento: {e}")
@@ -127,7 +132,7 @@ class IdleMusicManager:
         self.running = False
         
         if self.thread:
-            self.thread.join(timeout=5)
+            self.thread.join(timeout=THREAD_SHUTDOWN_TIMEOUT)
             self.thread = None
         
         logger.info("Idle Music Manager parado")

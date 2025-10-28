@@ -40,6 +40,9 @@ O sistema de música idle garante que a jukebox nunca fique em silêncio. Quando
 No arquivo `.env`:
 
 ```bash
+# Habilitar YouTube player (requer display conectado)
+YOUTUBE_ENABLED=true
+
 # Habilitar/desabilitar sistema de música idle
 IDLE_MUSIC_ENABLED=true
 
@@ -218,10 +221,12 @@ Novos testes incluem:
 
 ### Música idle não está tocando
 
-1. Verifique se está habilitado: `IDLE_MUSIC_ENABLED=true`
-2. Verifique o timeout: aguarde pelo menos `IDLE_MUSIC_TIMEOUT` segundos
-3. Verifique logs: `tail -f logs/jukebox.log`
-4. Certifique-se de que o YouTube player está inicializado
+1. Verifique se o YouTube player está habilitado: `YOUTUBE_ENABLED=true` no `.env`
+2. Verifique se está habilitado: `IDLE_MUSIC_ENABLED=true`
+3. Certifique-se de que o Raspberry Pi tem um display conectado
+4. Verifique o timeout: aguarde pelo menos `IDLE_MUSIC_TIMEOUT` segundos
+5. Verifique logs: `tail -f logs/jukebox.log`
+6. Procure por mensagens de erro durante a inicialização
 
 ### Anúncios ainda aparecem
 
