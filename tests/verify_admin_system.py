@@ -43,10 +43,10 @@ def main():
         print(f"1️⃣ Saldo inicial: R$ {initial_balance:.2f}")
         
         # Simula adição de crédito admin
-        print(f"2️⃣ Operador digita código correto...")
+        print(f"2️⃣ Operador usa código admin (simulação)...")
         amount = AdminConfig.ADMIN_CREDIT_AMOUNT
         new_balance = credit_balance.add_credit(amount)
-        print(f"3️⃣ Créditos adicionados: R$ {amount:.2f}")
+        print(f"3️⃣ Sistema adiciona créditos: R$ {amount:.2f}")
         print(f"4️⃣ Novo saldo: R$ {new_balance:.2f}")
         
         # Verifica saldo
