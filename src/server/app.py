@@ -35,8 +35,7 @@ try:
 except ImportError:
     YouTubePlayer = None
     IdleMusicManager = None
-    logger = logging.getLogger(__name__)
-    logger.warning("YouTube modules não disponíveis - usando player iframe no frontend")
+    # Logger will be configured below, just log a warning after configuration
 
 # Configuração de logging
 os.makedirs(LogConfig.LOG_FILE.parent, exist_ok=True)
@@ -52,6 +51,10 @@ logging.basicConfig(
     handlers=[handler, logging.StreamHandler()]
 )
 logger = logging.getLogger(__name__)
+
+# Log warning if YouTube modules not available
+if YouTubePlayer is None:
+    logger.warning("YouTube modules não disponíveis - usando player iframe no frontend")
 
 # Inicializa Flask
 app = Flask(__name__)
@@ -422,17 +425,24 @@ def add_to_queue():
                 "required": price
             }), 402
         
-        # Calcula tamanho máximo da fila baseado nos créditos disponíveis
-        # 1 crédito = 1 música na fila (R$ 1,00 por música)
-        max_queue_size = int(balance / price)
+        # Calcula tamanho máximo da fila baseado nos créditos disponíveis APÓS a compra
+        # Como vamos deduzir o preço, precisamos garantir que ainda há espaço na fila
+        # Exemplo: balance=5.0, price=1.0, após compra balance=4.0, max_queue=4
+        # Isso significa que podemos ter até 5 músicas (a atual + 4 futuras)
         current_queue_size = music_queue.get_queue_size()
+        balance_after_purchase = balance - price
+        max_queue_size_after = int(balance_after_purchase / price)
         
-        # Verifica se a fila já atingiu o limite baseado nos créditos
-        if current_queue_size >= max_queue_size:
+        # Verifica se adicionar esta música excederia o limite futuro
+        # current_queue_size é o tamanho atual da fila
+        # Após adicionar esta música, teremos current_queue_size + 1 músicas
+        # E o usuário terá balance_after_purchase créditos
+        # Ele deve ter crédito suficiente para pelo menos current_queue_size músicas restantes
+        if current_queue_size > max_queue_size_after:
             return jsonify({
                 "error": "Fila cheia. Limite baseado em créditos disponíveis",
                 "current_queue_size": current_queue_size,
-                "max_queue_size": max_queue_size,
+                "max_queue_size": max_queue_size_after + 1,  # +1 porque a música atual também conta
                 "balance": balance
             }), 429
         
@@ -456,11 +466,14 @@ def add_to_queue():
         queue = music_queue.get_queue()
         has_playing = any(song['status'] == 'playing' for song in queue)
         
+        # Calcula posição na fila (total de músicas incluindo a recém-adicionada)
+        total_queue_size = music_queue.get_queue_size()
+        
         return jsonify({
             "message": "Música adicionada à fila",
             "song_id": song_id,
             "new_balance": credit_balance.get_balance(),
-            "queue_position": music_queue.get_queue_size(),
+            "queue_position": total_queue_size,  # Posição real na fila (1-based)
             "will_play_immediately": not has_playing
         })
         
