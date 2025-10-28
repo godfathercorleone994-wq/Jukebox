@@ -163,7 +163,8 @@
         playVideoById: function(videoId) {
             if (!playerReady || !player) {
                 console.warn('Player not ready yet. Attempting to initialize...');
-                setTimeout(() => this.playVideoById(videoId), 500);
+                const self = this;
+                setTimeout(function() { self.playVideoById(videoId); }, 500);
                 return;
             }
             

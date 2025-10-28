@@ -173,6 +173,13 @@
             margin-bottom: 4px;
         }
 
+        .error-message {
+            color: #dc2626;
+            font-size: 13px;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
         /* Hidden player div */
         #player {
             display: none;
@@ -189,8 +196,9 @@
             <input 
                 type="text" 
                 id="youtube-url" 
-                placeholder="e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ or dQw4w9WgXcQ"
+                placeholder="Enter YouTube URL or video ID"
                 value="">
+            <div id="error-message" class="error-message" style="display: none;"></div>
         </div>
 
         <div class="button-group">
@@ -212,6 +220,7 @@
 
         <div class="info-box">
             <strong>ℹ️ How it works:</strong>
+            <p style="margin-bottom: 8px; font-size: 12px;">Examples: <code>dQw4w9WgXcQ</code>, <code>https://youtu.be/dQw4w9WgXcQ</code></p>
             <ul>
                 <li>Paste a YouTube URL or video ID above</li>
                 <li>Click Play to start audio playback</li>
@@ -286,6 +295,16 @@
             document.getElementById('player-state').textContent = stateMap[state] || 'Unknown';
         }
 
+        // Show error message
+        function showError(message) {
+            const errorEl = document.getElementById('error-message');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            setTimeout(function() {
+                errorEl.style.display = 'none';
+            }, 5000);
+        }
+
         // Initialize player when ready
         window.onYouTubePlayerReady = function() {
             console.log('YouTube Player is ready!');
@@ -304,7 +323,7 @@
             const videoId = extractVideoId(input);
             
             if (!videoId) {
-                alert('Please enter a valid YouTube URL or video ID');
+                showError('Please enter a valid YouTube URL or video ID');
                 return;
             }
             
@@ -315,7 +334,7 @@
             if (window.YouTubePlayer && window.YouTubePlayer.playVideoById) {
                 window.YouTubePlayer.playVideoById(videoId);
             } else {
-                alert('YouTube Player is not ready yet. Please wait a moment and try again.');
+                showError('YouTube Player is not ready yet. Please wait a moment and try again.');
             }
         }
 
