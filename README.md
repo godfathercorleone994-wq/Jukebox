@@ -6,6 +6,8 @@ Sistema embarcado de Jukebox com aceitador de notas e YouTube Music para Raspber
 
 - 💰 **Múltiplos métodos de pagamento**: Dinheiro, PIX, Débito, Crédito
 - 🎵 **Reproduz músicas do YouTube** automaticamente com Selenium
+- 🎧 **Música ambiente automática**: Toca músicas aleatórias a cada 10 minutos quando não há atividade
+- 🚫 **Bloqueio de anúncios**: Sistema avançado de ad-blocking integrado
 - 📱 **Interface touchscreen responsiva** com design moderno
 - 💾 **Banco de dados SQLite** para logs, transações e histórico
 - 🔒 **API REST completa** protegida por token
@@ -44,6 +46,10 @@ pip install -r requirements.txt
 # Configure variáveis de ambiente
 cp env.example .env
 nano .env  # Edite com suas configurações
+
+# IMPORTANTE: Para ativar YouTube e música idle
+# Configure no .env: YOUTUBE_ENABLED=true
+# (Requer display conectado ao Raspberry Pi)
 
 # Execute testes
 python3 tests/test_jukebox.py
@@ -116,6 +122,9 @@ Jukebox-Pi-Money/
 - ✅ Controle de volume e pausa/play
 - ✅ Detecção e skip de anúncios
 - ✅ Extração de metadados
+- ✅ **Sistema de música idle** - Reproduz músicas aleatórias a cada 10 minutos quando não há atividade
+- ✅ **Ad-blocking avançado** - Bloqueio inteligente de anúncios com múltiplas técnicas
+- ✅ Categorias personalizáveis de música para modo idle
 
 ### Frontend
 - ✅ Interface responsiva touchscreen

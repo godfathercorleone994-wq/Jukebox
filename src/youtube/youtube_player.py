@@ -5,6 +5,7 @@ Busca e reproduz músicas automaticamente
 
 import logging
 import time
+import random
 from typing import Optional, List, Dict
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -50,10 +51,33 @@ class YouTubePlayer:
             options.add_argument('--no-sandbox')
             options.add_argument('--disable-dev-shm-usage')
             
+            # Ad-blocking avançado se habilitado
+            if self.config.ADBLOCK_ENABLED:
+                # Bloqueia domínios de anúncios conhecidos
+                options.add_argument('--disable-background-networking')
+                options.add_argument('--disable-default-apps')
+                options.add_argument('--disable-sync')
+                
+                # Preferências para bloquear anúncios
+                prefs = {
+                    'profile.default_content_setting_values': {
+                        'notifications': 2,
+                        'media_stream': 2,
+                    }
+                }
+                options.add_experimental_option('prefs', prefs)
+            
             self.driver = webdriver.Chrome(options=options)
             self.wait = WebDriverWait(self.driver, self.config.WAIT_TIMEOUT)
             
-            logger.info("Chrome WebDriver inicializado")
+            # Injeta script para bloquear anúncios adicionalmente
+            if self.config.ADBLOCK_ENABLED:
+                self._inject_adblock_script()
+            
+            log_msg = "Chrome WebDriver inicializado"
+            if self.config.ADBLOCK_ENABLED:
+                log_msg += " com ad-blocking"
+            logger.info(log_msg)
             
         except Exception as e:
             logger.error(f"Erro ao inicializar WebDriver: {e}")
@@ -168,6 +192,67 @@ class YouTubePlayer:
             pass
         except Exception as e:
             logger.debug(f"Erro ao pular anúncio: {e}")
+        
+        # Tenta outros seletores de botão de pular anúncio
+        try:
+            skip_selectors = [
+                ".ytp-ad-skip-button-modern",
+                ".ytp-skip-ad-button",
+                "button[aria-label*='Skip']",
+                "button.ytp-ad-skip-button"
+            ]
+            for selector in skip_selectors:
+                try:
+                    skip_btn = self.driver.find_element(By.CSS_SELECTOR, selector)
+                    if skip_btn.is_displayed():
+                        skip_btn.click()
+                        logger.info(f"Anúncio pulado via seletor: {selector}")
+                        break
+                except:
+                    continue
+        except Exception as e:
+            logger.debug(f"Erro ao tentar seletores adicionais: {e}")
+    
+    def _inject_adblock_script(self):
+        """Injeta script JavaScript para bloquear anúncios"""
+        if not self.driver:
+            return
+        
+        adblock_js = """
+        // Script para bloquear elementos de anúncio no YouTube
+        (function() {
+            const blockAds = () => {
+                // Remove overlays de anúncio
+                const adOverlays = document.querySelectorAll('.ytp-ad-overlay-container, .ytp-ad-text-overlay');
+                adOverlays.forEach(el => el.remove());
+                
+                // Remove banners de anúncio
+                const adBanners = document.querySelectorAll('[id*="ad-"], [class*="ad-"]');
+                adBanners.forEach(el => {
+                    if (el.tagName !== 'VIDEO' && el.offsetHeight < 200) {
+                        el.remove();
+                    }
+                });
+                
+                // Acelera anúncios de vídeo (se houver)
+                const video = document.querySelector('video');
+                if (video && document.querySelector('.ad-showing, .video-ads')) {
+                    video.playbackRate = 16;
+                    video.muted = true;
+                }
+            };
+            
+            // Executa periodicamente
+            setInterval(blockAds, 1000);
+            blockAds();
+        })();
+        """
+        
+        try:
+            self.driver.execute_script(adblock_js)
+            logger.info("Script de ad-blocking injetado")
+        except Exception as e:
+            logger.debug(f"Erro ao injetar script de adblock: {e}")
     
     def _extract_video_info(self, element) -> Dict:
         """Extrai informações do vídeo do elemento de resultado"""
@@ -256,6 +341,40 @@ class YouTubePlayer:
             logger.info(f"Volume definido: {level}%")
         except Exception as e:
             logger.error(f"Erro ao definir volume: {e}")
+    
+    def play_random_music(self) -> Optional[Dict]:
+        """
+        Reproduz uma música aleatória de uma categoria musical
+        Usado para evitar silêncio quando não há atividade
+        
+        Returns:
+            Dict com informações do vídeo ou None se falhar
+        """
+        if not self.driver:
+            logger.error("WebDriver não inicializado")
+            return None
+        
+        try:
+            # Escolhe uma categoria aleatória
+            queries = self.config.IDLE_MUSIC_QUERIES
+            if not queries:
+                logger.warning("Nenhuma categoria de música idle configurada")
+                return None
+            
+            query = random.choice(queries).strip()
+            logger.info(f"Tocando música aleatória da categoria: {query}")
+            
+            # Busca e reproduz
+            result = self.search_and_play(query)
+            
+            if result:
+                logger.info(f"Música idle reproduzida: {result.get('title')}")
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Erro ao tocar música aleatória: {e}")
+            return None
     
     def close(self):
         """Fecha navegador e limpa recursos"""

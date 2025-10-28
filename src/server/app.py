@@ -26,7 +26,7 @@ from src.server.config import (
 )
 from src.db import Database, Transaction, CreditBalance, MusicQueue
 from src.hardware import BillAcceptor
-from src.youtube import YouTubePlayer
+from src.youtube import YouTubePlayer, IdleMusicManager
 from src.payments import PaymentStatus
 from src.payments.mercadopago_gateway import create_gateway
 
@@ -60,19 +60,35 @@ music_queue = MusicQueue(db)
 bill_acceptor = None
 youtube_player = None
 payment_gateway = None
+idle_music_manager = None
 
 
 def init_hardware():
     """Inicializa módulos de hardware e YouTube"""
-    global bill_acceptor, youtube_player
+    global bill_acceptor, youtube_player, idle_music_manager
     
     # Inicializa aceitador de notas
     bill_acceptor = BillAcceptor(callback=on_cash_received)
     logger.info("Bill acceptor inicializado")
     
-    # Inicializa YouTube player (comentado para evitar erro sem display)
-    # youtube_player = YouTubePlayer()
-    # logger.info("YouTube player inicializado")
+    # Inicializa YouTube player se habilitado
+    # Requer display conectado - desabilite se rodando em ambiente sem GUI
+    youtube_enabled = os.getenv('YOUTUBE_ENABLED', 'false').lower() == 'true'
+    
+    if youtube_enabled:
+        try:
+            youtube_player = YouTubePlayer()
+            logger.info("YouTube player inicializado")
+            
+            # Inicializa gerenciador de música idle
+            idle_music_manager = IdleMusicManager(youtube_player)
+            idle_music_manager.start()
+            logger.info("Idle music manager inicializado")
+        except Exception as e:
+            logger.error(f"Erro ao inicializar YouTube/Idle Music: {e}")
+            logger.warning("Sistema funcionará sem YouTube player")
+    else:
+        logger.info("YouTube player desabilitado (YOUTUBE_ENABLED=false)")
 
 
 def init_payment_gateway():
@@ -107,6 +123,10 @@ def on_cash_received(amount: float):
         amount=amount,
         status=PaymentStatus.APPROVED
     )
+    
+    # Atualiza atividade no gerenciador de música idle
+    if idle_music_manager:
+        idle_music_manager.update_activity()
     
     logger.info(f"Novo saldo: R$ {new_balance:.2f}")
 
@@ -272,6 +292,10 @@ def create_payment():
             payment_data=str(payment_result)
         )
         
+        # Atualiza atividade no gerenciador de música idle
+        if idle_music_manager:
+            idle_music_manager.update_activity()
+        
         return jsonify({
             "transaction_id": transaction_id,
             "payment_id": payment_result.get('payment_id'),
@@ -406,6 +430,10 @@ def add_to_queue():
             duration=data.get('duration')
         )
         
+        # Atualiza atividade no gerenciador de música idle
+        if idle_music_manager:
+            idle_music_manager.update_activity()
+        
         return jsonify({
             "message": "Música adicionada à fila",
             "song_id": song_id,
@@ -477,6 +505,53 @@ def simulate_cash():
     except Exception as e:
         logger.error(f"Erro ao simular dinheiro: {e}")
         return safe_error_response("Erro ao simular inserção de dinheiro", 500)
+
+
+@app.route('/api/idle/status')
+def get_idle_status():
+    """Retorna status do sistema de música idle"""
+    try:
+        if not idle_music_manager:
+            return jsonify({
+                "enabled": False,
+                "message": "Idle music manager não inicializado"
+            })
+        
+        return jsonify({
+            "enabled": YouTubeConfig.IDLE_MUSIC_ENABLED,
+            "timeout": YouTubeConfig.IDLE_MUSIC_TIMEOUT,
+            "idle_time": idle_music_manager.get_idle_time(),
+            "is_idle": idle_music_manager.is_idle(),
+            "categories": YouTubeConfig.IDLE_MUSIC_QUERIES
+        })
+    except Exception as e:
+        logger.error(f"Erro ao obter status idle: {e}")
+        return safe_error_response("Erro ao obter status do sistema idle", 500)
+
+
+@app.route('/api/idle/trigger', methods=['POST'])
+def trigger_idle_music():
+    """Força reprodução de música idle (apenas para testes)"""
+    if FlaskConfig.ENV != 'development':
+        return jsonify({"error": "Disponível apenas em desenvolvimento"}), 403
+    
+    try:
+        if not youtube_player:
+            return jsonify({"error": "YouTube player não disponível"}), 503
+        
+        result = youtube_player.play_random_music()
+        
+        if result:
+            return jsonify({
+                "message": "Música idle tocada com sucesso",
+                "video": result
+            })
+        
+        return jsonify({"error": "Falha ao tocar música idle"}), 500
+        
+    except Exception as e:
+        logger.error(f"Erro ao tocar música idle: {e}")
+        return safe_error_response("Erro ao tocar música idle", 500)
 
 
 # ===== INICIALIZAÇÃO =====

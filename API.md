@@ -318,6 +318,59 @@ Simula inserção de dinheiro.
 - `403` - Disponível apenas em desenvolvimento
 - `503` - Hardware não disponível
 
+## 🎧 Sistema de Música Idle
+
+### GET /api/idle/status
+
+Retorna status do sistema de música idle (reprodução automática).
+
+**Response:**
+```json
+{
+  "enabled": true,
+  "timeout": 600,
+  "idle_time": 120.5,
+  "is_idle": false,
+  "categories": [
+    "top hits 2024",
+    "best pop songs",
+    "rock classics",
+    "jazz music",
+    "bossa nova"
+  ]
+}
+```
+
+**Campos:**
+- `enabled` - Se o sistema está habilitado
+- `timeout` - Tempo em segundos para considerar ocioso
+- `idle_time` - Tempo decorrido desde última atividade
+- `is_idle` - Se está atualmente ocioso
+- `categories` - Categorias de música disponíveis
+
+### POST /api/idle/trigger
+
+🔒 **Apenas em modo desenvolvimento**
+
+Força reprodução de música idle para teste.
+
+**Response:**
+```json
+{
+  "message": "Música idle tocada com sucesso",
+  "video": {
+    "video_id": "abc123",
+    "title": "Top Hits 2024 Mix",
+    "duration_text": "3:45"
+  }
+}
+```
+
+**Errors:**
+- `403` - Disponível apenas em desenvolvimento
+- `503` - YouTube player não disponível
+- `500` - Falha ao tocar música
+
 ## 📝 Códigos de Erro HTTP
 
 | Código | Descrição |
