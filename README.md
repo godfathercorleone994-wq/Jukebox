@@ -2,6 +2,8 @@
 
 Sistema embarcado de Jukebox com aceitador de notas e YouTube Music para Raspberry Pi.
 
+**✨ Novo: Aplicativo Android disponível!** Use o Jukebox no seu celular com o app WebView.
+
 **✨ Novo: Agora funciona em qualquer PC/Linux com navegação por teclado!** 
 
 **🌐 Teste no navegador**: [Experimente a demo online via GitHub Pages!](https://godfathercorleone994-wq.github.io/Jukebox/)
@@ -13,6 +15,7 @@ Sistema embarcado de Jukebox com aceitador de notas e YouTube Music para Raspber
 - 🎧 **Música ambiente automática**: Toca músicas aleatórias a cada 10 minutos quando não há atividade
 - 🚫 **Bloqueio de anúncios**: Sistema avançado de ad-blocking integrado
 - 📱 **Interface touchscreen responsiva** com design moderno
+- 📲 **Aplicativo Android**: APK WebView para instalar no celular
 - ⌨️ **Navegação completa por teclado**: Funciona sem mouse ou touchscreen
 - 🔐 **Código de operador**: Sistema secreto para adicionar créditos sem pagamento
 - 🖥️ **Suporte para PC/Linux**: Não requer Raspberry Pi para desenvolvimento/testes
@@ -202,6 +205,37 @@ Disponível:
 - ✅ Funciona em qualquer navegador moderno
 
 📖 **Guia completo**: [GITHUB_PAGES.md](GITHUB_PAGES.md)
+
+### Opção 6: Aplicativo Android (APK)
+
+📲 **Instale no seu celular Android!**
+
+Compilar o APK do Jukebox para Android:
+
+```bash
+# Clone o repositório
+git clone https://github.com/godfathercorleone994-wq/Jukebox.git
+cd Jukebox
+
+# Compile o APK
+./build-android.sh
+
+# O APK estará em: android/app/build/outputs/apk/release/app-release-unsigned.apk
+```
+
+Como usar:
+- ✅ **WebView nativo** - Acessa a interface web do Jukebox
+- ✅ **Conecta ao servidor** - Configure a URL do servidor Flask
+- ✅ **Funciona offline** - Se o servidor estiver na rede local
+- ✅ **Interface touchscreen** otimizada para celular
+- ✅ **Fácil instalação** - Transferir APK e instalar
+
+Configuração:
+- Por padrão, conecta em `http://localhost:5000`
+- Edite `MainActivity.java` para mudar a URL padrão
+- Ideal para usar com servidor na rede local ou remoto
+
+📖 **Guia completo**: [android/README.md](android/README.md)
 
 ## 📂 Estrutura do Projeto
 
@@ -474,6 +508,15 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 
 ## 🌟 Novidades
 
+### v2.4 - Aplicativo Android
+- 📲 **Novo!** APK Android WebView para instalar no celular
+- ✨ **Acesse o Jukebox** diretamente do seu Android
+- 🔧 **URL configurável** - conecte ao servidor local ou remoto
+- 📱 **Interface touchscreen** otimizada para mobile
+- 🚀 **Script de build** automatizado (`build-android.sh`)
+- 📖 **Documentação completa** Android ([android/README.md](android/README.md))
+- 🎯 **Ideal para testes** em dispositivos móveis reais
+
 ### v2.3 - Instaladores Profissionais e Executáveis Standalone
 - 📦 **Novo!** Instaladores profissionais para Linux (.deb) e Windows (.exe)
 - ✨ **Instalação com um clique/comando** - configuração automática
@@ -530,7 +573,8 @@ Contribuições são bem-vindas! Por favor:
 - 🐛 Issues: [GitHub Issues](https://github.com/godfathercorleone994-wq/Jukebox/issues)
 - 🌐 Demo Online: [GitHub Pages](https://godfathercorleone994-wq.github.io/Jukebox/)
 - 📖 Docs: 
-  - [INSTALLER.md](INSTALLER.md) - **Novo!** Instaladores profissionais para usuários finais
+  - [android/README.md](android/README.md) - **Novo!** Aplicativo Android (APK)
+  - [INSTALLER.md](INSTALLER.md) - Instaladores profissionais para usuários finais
   - [BUILD.md](BUILD.md) - Criação de executáveis Linux/Windows
   - [DEPLOY.md](DEPLOY.md) - Deploy em Raspberry Pi
   - [PC-LINUX.md](PC-LINUX.md) - Uso em PC/Linux
