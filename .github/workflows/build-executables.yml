@@ -1,0 +1,150 @@
+name: Build Executables
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    name: Build Linux Executable
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Build Linux executable
+      run: |
+        chmod +x build-linux.sh
+        ./build-linux.sh
+    
+    - name: Create tarball
+      run: |
+        cd dist
+        tar -czf ../jukebox-linux-x64.tar.gz jukebox
+        cd ..
+        cp env.example dist/
+    
+    - name: Upload Linux artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: jukebox-linux-x64
+        path: |
+          jukebox-linux-x64.tar.gz
+          dist/env.example
+          QUICKSTART_EXECUTABLE.md
+  
+  build-windows:
+    name: Build Windows Executable
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Build Windows executable
+      run: |
+        build-windows.bat
+    
+    - name: Create zip
+      run: |
+        cd dist
+        Compress-Archive -Path jukebox.exe -DestinationPath ../jukebox-windows-x64.zip
+        cd ..
+        Copy-Item env.example dist/
+    
+    - name: Upload Windows artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: jukebox-windows-x64
+        path: |
+          jukebox-windows-x64.zip
+          dist/env.example
+          QUICKSTART_EXECUTABLE.md
+  
+  release:
+    name: Create Release
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Download Linux artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: jukebox-linux-x64
+        path: artifacts-linux
+    
+    - name: Download Windows artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: jukebox-windows-x64
+        path: artifacts-windows
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          artifacts-linux/jukebox-linux-x64.tar.gz
+          artifacts-windows/jukebox-windows-x64.zip
+          artifacts-linux/env.example
+          artifacts-linux/QUICKSTART_EXECUTABLE.md
+        body: |
+          ## 🎵 Jukebox Executáveis Standalone
+          
+          ### 📦 Downloads
+          
+          #### Linux (x86_64)
+          - **jukebox-linux-x64.tar.gz** - Executável para Linux
+          - Compatível com qualquer distribuição Linux moderna
+          - Não requer Python instalado
+          
+          #### Windows (x86_64)
+          - **jukebox-windows-x64.zip** - Executável para Windows
+          - Compatível com Windows 7/8/10/11
+          - Não requer Python instalado
+          
+          ### 🚀 Como usar
+          
+          1. Baixe o arquivo para sua plataforma
+          2. Extraia o arquivo
+          3. Copie o `env.example` para `.env` e configure
+          4. Execute o jukebox
+          5. Acesse http://localhost:5000
+          
+          Veja o **QUICKSTART_EXECUTABLE.md** incluído para instruções detalhadas.
+          
+          ### 📖 Documentação
+          
+          - [README.md](https://github.com/godfathercorleone994-wq/Jukebox/blob/main/README.md)
+          - [BUILD.md](https://github.com/godfathercorleone994-wq/Jukebox/blob/main/BUILD.md)
+          - [QUICKSTART_EXECUTABLE.md](https://github.com/godfathercorleone994-wq/Jukebox/blob/main/QUICKSTART_EXECUTABLE.md)
+          
+          ### 🌐 Testar Online
+          
+          Prefere testar sem instalar? Acesse: https://godfathercorleone994-wq.github.io/Jukebox/
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

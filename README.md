@@ -53,6 +53,37 @@ Sistema embarcado de Jukebox com aceitador de notas e YouTube Music para Raspber
 
 📖 **Veja o guia completo**: [PC-LINUX.md](PC-LINUX.md)
 
+### Opção 3: Executável Standalone (Sem Python)
+
+**✨ Novo!** Crie executáveis standalone que funcionam sem instalar Python:
+
+#### Linux
+```bash
+# Construir executável
+./build-linux.sh
+
+# Executar
+./dist/jukebox
+```
+
+#### Windows
+```cmd
+REM Construir executável
+build-windows.bat
+
+REM Executar
+dist\jukebox.exe
+```
+
+Características:
+- ✅ **Não requer Python** instalado no sistema
+- ✅ **Standalone** - inclui todas as dependências
+- ✅ **Portátil** - funciona em qualquer Linux/Windows
+- ✅ **Fácil distribuição** - arquivo único de ~80-100MB
+- ✅ **Pronto para uso** - apenas executar e acessar http://localhost:5000
+
+📖 **Guia completo de build**: [BUILD.md](BUILD.md)
+
 ## 🛠️ Instalação Rápida
 
 ### Para Raspberry Pi (Produção)
@@ -92,7 +123,7 @@ O script `start-pc.sh` automaticamente:
 
 📖 **Guia completo para PC**: [PC-LINUX.md](PC-LINUX.md)
 
-### Opção 3: Testar no Navegador (Sem Instalação)
+### Opção 4: Testar no Navegador (Sem Instalação)
 
 🌐 **Teste online sem instalar nada!**
 
@@ -380,6 +411,15 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 
 ## 🌟 Novidades
 
+### v2.3 - Executáveis Standalone para Linux e Windows
+- 📦 **Novo!** Build de executáveis standalone sem necessidade de Python
+- 🐧 Suporte completo para Linux (qualquer distribuição x64)
+- 🪟 Suporte completo para Windows (7/8/10/11 x64)
+- 🚀 Scripts automatizados de build (`build-linux.sh` e `build-windows.bat`)
+- 📖 Documentação completa de build e distribuição ([BUILD.md](BUILD.md))
+- ✨ Executável único de ~80-100MB com todas as dependências incluídas
+- 🎯 Ideal para distribuição a usuários finais sem conhecimento técnico
+
 ### v2.2 - Testes no Navegador via GitHub Pages
 - 🌐 Deploy automático via GitHub Actions para GitHub Pages
 - ✅ Teste o código diretamente no navegador sem instalar nada
@@ -420,6 +460,7 @@ Contribuições são bem-vindas! Por favor:
 - 🐛 Issues: [GitHub Issues](https://github.com/godfathercorleone994-wq/Jukebox/issues)
 - 🌐 Demo Online: [GitHub Pages](https://godfathercorleone994-wq.github.io/Jukebox/)
 - 📖 Docs: 
+  - [BUILD.md](BUILD.md) - **Novo!** Criação de executáveis Linux/Windows
   - [DEPLOY.md](DEPLOY.md) - Deploy em Raspberry Pi
   - [PC-LINUX.md](PC-LINUX.md) - Uso em PC/Linux
   - [GITHUB_PAGES.md](GITHUB_PAGES.md) - Testes no navegador

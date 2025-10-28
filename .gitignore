@@ -55,3 +55,10 @@ chromedriver.log
 *.tmp
 *.bak
 *.cache
+
+# === PYINSTALLER ===
+*.spec.bak
+build/
+dist/
+*.manifest
+*.spec~
