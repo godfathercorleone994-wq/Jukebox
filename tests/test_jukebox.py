@@ -18,43 +18,54 @@ def test_database():
     """Testa operações do banco de dados"""
     print("🧪 Testando banco de dados...")
     
-    # Cria banco de teste
-    db = Database()
+    # Cria banco de teste em memória ou arquivo temporário
+    import tempfile
+    from pathlib import Path
+    
+    # Usa banco temporário para testes
+    temp_db = Path(tempfile.gettempdir()) / f"test_jukebox_{os.getpid()}.db"
+    db = Database(db_path=temp_db)
     transactions = Transaction(db)
     balance = CreditBalance(db)
     queue = MusicQueue(db)
     
-    # Testa saldo
-    print("  ✓ Saldo inicial:", balance.get_balance())
-    
-    # Adiciona crédito
-    balance.add_credit(10.0)
-    print("  ✓ Crédito adicionado: R$ 10.00")
-    print("  ✓ Novo saldo:", balance.get_balance())
-    
-    # Cria transação
-    tx_id = transactions.create(
-        transaction_id="test_001",
-        payment_method=PaymentMethod.CASH,
-        amount=10.0,
-        status=PaymentStatus.APPROVED
-    )
-    print(f"  ✓ Transação criada: ID {tx_id}")
-    
-    # Adiciona música à fila
-    song_id = queue.add_song(
-        video_id="dQw4w9WgXcQ",
-        title="Never Gonna Give You Up",
-        artist="Rick Astley"
-    )
-    print(f"  ✓ Música adicionada à fila: ID {song_id}")
-    
-    # Lista fila
-    queue_list = queue.get_queue()
-    print(f"  ✓ Tamanho da fila: {len(queue_list)}")
-    
-    print("✅ Banco de dados funcionando!\n")
-    return True
+    try:
+        # Testa saldo
+        print("  ✓ Saldo inicial:", balance.get_balance())
+        
+        # Adiciona crédito
+        balance.add_credit(10.0)
+        print("  ✓ Crédito adicionado: R$ 10.00")
+        print("  ✓ Novo saldo:", balance.get_balance())
+        
+        # Cria transação
+        tx_id = transactions.create(
+            transaction_id="test_001",
+            payment_method=PaymentMethod.CASH,
+            amount=10.0,
+            status=PaymentStatus.APPROVED
+        )
+        print(f"  ✓ Transação criada: ID {tx_id}")
+        
+        # Adiciona música à fila
+        song_id = queue.add_song(
+            video_id="dQw4w9WgXcQ",
+            title="Never Gonna Give You Up",
+            artist="Rick Astley"
+        )
+        print(f"  ✓ Música adicionada à fila: ID {song_id}")
+        
+        # Lista fila
+        queue_list = queue.get_queue()
+        print(f"  ✓ Tamanho da fila: {len(queue_list)}")
+        
+        print("✅ Banco de dados funcionando!\n")
+        return True
+    finally:
+        # Limpa banco temporário
+        if temp_db.exists():
+            temp_db.unlink()
+
 
 
 def test_config():
