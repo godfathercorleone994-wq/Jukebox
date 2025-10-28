@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎵 Jukebox-Pi-Money</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Tela 1: Inicial / Seleção de Pagamento -->
+    <div id="screen-payment-selection" class="screen active">
+        <div class="header">
+            <h1>🎵 Jukebox</h1>
+            <div class="balance">
+                Saldo: R$ <span id="balance-display">0.00</span>
+            </div>
+        </div>
+        
+        <div class="content">
+            <h2>Selecione o método de pagamento:</h2>
+            
+            <div class="payment-methods" id="payment-methods-container">
+                <!-- Métodos carregados via JS -->
+            </div>
+            
+            <div class="info">
+                <p>💰 Preço base por música: R$ 5,00</p>
+                <p>💳 Taxas aplicadas conforme método</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <button onclick="refreshStatus()" class="btn-secondary">🔄 Atualizar</button>
+        </div>
+    </div>
+    
+    <!-- Tela 2: Aguardando Pagamento (PIX) -->
+    <div id="screen-waiting-payment" class="screen">
+        <div class="header">
+            <h1>🎵 Jukebox</h1>
+        </div>
+        
+        <div class="content center">
+            <h2>Aguardando Pagamento</h2>
+            
+            <div id="qr-code-container" class="qr-container">
+                <img id="qr-code-image" src="" alt="QR Code PIX">
+            </div>
+            
+            <div class="payment-info">
+                <p class="amount">Valor: R$ <span id="payment-amount">0.00</span></p>
+                <p class="status" id="payment-status">Escaneie o QR Code com seu app de pagamento</p>
+            </div>
+            
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Aguardando confirmação...</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <button onclick="cancelPayment()" class="btn-danger">❌ Cancelar</button>
+        </div>
+    </div>
+    
+    <!-- Tela 3: Buscar Música -->
+    <div id="screen-search-music" class="screen">
+        <div class="header">
+            <h1>🎵 Jukebox</h1>
+            <div class="balance">
+                Saldo: R$ <span id="balance-search">0.00</span>
+            </div>
+        </div>
+        
+        <div class="content">
+            <h2>Buscar Música</h2>
+            
+            <div class="search-box">
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    placeholder="Digite nome da música ou artista..."
+                    autocomplete="off"
+                >
+                <button onclick="searchMusic()" class="btn-primary">🔍 Buscar</button>
+            </div>
+            
+            <div id="search-results" class="search-results">
+                <!-- Resultados aparecem aqui -->
+            </div>
+            
+            <div class="queue-preview">
+                <h3>🎵 Fila atual (<span id="queue-count">0</span>):</h3>
+                <div id="queue-list" class="queue-list">
+                    <!-- Fila carregada via JS -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <button onclick="goToHome()" class="btn-secondary">🏠 Voltar</button>
+            <button onclick="refreshQueue()" class="btn-secondary">🔄 Atualizar Fila</button>
+        </div>
+    </div>
+    
+    <!-- Tela 4: Música Adicionada -->
+    <div id="screen-success" class="screen">
+        <div class="content center">
+            <div class="success-icon">✅</div>
+            <h2>Música Adicionada!</h2>
+            
+            <div class="success-info">
+                <p class="song-title" id="added-song-title"></p>
+                <p>Sua música foi adicionada à fila</p>
+                <p class="new-balance">Novo saldo: R$ <span id="balance-after">0.00</span></p>
+            </div>
+            
+            <div class="actions">
+                <button onclick="addAnotherSong()" class="btn-primary">➕ Adicionar Outra</button>
+                <button onclick="goToHome()" class="btn-secondary">🏠 Finalizar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tela 5: Erro -->
+    <div id="screen-error" class="screen">
+        <div class="content center">
+            <div class="error-icon">❌</div>
+            <h2>Erro</h2>
+            
+            <div class="error-info">
+                <p id="error-message">Algo deu errado</p>
+            </div>
+            
+            <div class="actions">
+                <button onclick="goToHome()" class="btn-primary">🏠 Voltar ao Início</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner-large"></div>
+        <p>Carregando...</p>
+    </div>
+    
+    <script src="/static/app.js"></script>
+</body>
+</html>
