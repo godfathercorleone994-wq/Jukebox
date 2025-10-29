@@ -116,6 +116,10 @@ Vantagens dos Instaladores:
 
 #### Windows
 ```cmd
+REM Compilação completa (executável + instalador Inno Setup)
+compile-windows.bat
+
+REM Ou usar scripts separados:
 REM Construir executável
 build-windows.bat
 
@@ -128,9 +132,11 @@ Características:
 - ✅ **Standalone** - inclui todas as dependências
 - ✅ **Portátil** - funciona em qualquer Linux/Windows
 - ✅ **Fácil distribuição** - arquivo único de ~80-100MB
+- ✅ **Instalador profissional** - com Inno Setup
 - ✅ **Pronto para uso** - apenas executar e acessar http://localhost:5000
 
-📖 **Guia completo de build**: [BUILD.md](BUILD.md)
+📖 **Guia completo de build**: [BUILD.md](BUILD.md)  
+📖 **Guia de compilação Windows**: [COMPILACAO_WINDOWS.md](COMPILACAO_WINDOWS.md)
 
 ## 🛠️ Instalação Rápida
 

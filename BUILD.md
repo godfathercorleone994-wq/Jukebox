@@ -62,7 +62,30 @@ dist/jukebox
 
 ## 🔨 Construindo o Executável Windows
 
-### Passo 1: Prepare o ambiente
+### Método 1: Script Unificado (Recomendado - Novo!)
+
+Use o novo script `compile-windows.bat` que compila o executável e cria o instalador Inno Setup:
+
+```cmd
+REM Clone o repositório (se ainda não tiver)
+git clone https://github.com/godfathercorleone994-wq/Jukebox.git
+cd Jukebox
+
+REM Compile tudo (executável + instalador)
+compile-windows.bat
+
+REM Ou compile apenas o executável
+compile-windows.bat --exe-only
+
+REM Ou limpe tudo e recompile
+compile-windows.bat --clean
+```
+
+📖 **Guia completo em português**: [COMPILACAO_WINDOWS.md](COMPILACAO_WINDOWS.md)
+
+### Método 2: Scripts Separados
+
+#### Passo 1: Prepare o ambiente
 
 ```cmd
 REM Clone o repositório (se ainda não tiver)
@@ -70,29 +93,38 @@ git clone https://github.com/godfathercorleone994-wq/Jukebox.git
 cd Jukebox
 ```
 
-### Passo 2: Execute o script de build
+#### Passo 2: Execute o script de build
 
 ```cmd
-REM Execute o build
+REM Execute o build do executável
 build-windows.bat
 ```
 
-### Passo 3: Aguarde a conclusão
+#### Passo 3: Aguarde a conclusão
 
 O processo de build pode levar alguns minutos. Você verá:
 - Criação do ambiente virtual
 - Instalação de dependências
 - Construção do executável com PyInstaller
 
-### Passo 4: Localize o executável
+#### Passo 4: (Opcional) Crie o instalador
 
-O executável será criado em:
+```cmd
+REM Crie o instalador profissional com Inno Setup
+build-windows-installer.bat
 ```
-dist\jukebox.exe
+
+#### Passo 5: Localize os arquivos
+
+Os arquivos serão criados em:
+```
+dist\jukebox.exe                           (executável)
+installers\jukebox-setup-windows-x64.exe   (instalador)
 ```
 
 ### Tamanho aproximado
 - Executável: ~80-100 MB (inclui Python runtime + todas as dependências)
+- Instalador: ~80-100 MB (inclui o executável + arquivos de configuração)
 
 ## 🚀 Usando o Executável
 
