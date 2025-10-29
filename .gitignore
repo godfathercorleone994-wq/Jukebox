@@ -32,6 +32,14 @@ wheels/
 *.sqlite
 *.sqlite3
 
+# === MÚSICA LOCAL ===
+data/local_music/*.mp3
+data/local_music/*.wav
+data/local_music/*.flac
+data/local_music/*.ogg
+# Mantém o metadata.json no repositório como exemplo
+!data/local_music/metadata.json
+
 # === LOGS ===
 logs/
 *.log

@@ -1,0 +1,25 @@
+{
+  "songs": {
+    "local_001": {
+      "title": "Jazz Café Instrumental",
+      "artist": "Local Artist",
+      "duration": 225,
+      "file_path": "jazz_cafe.mp3",
+      "plays": 0
+    },
+    "local_002": {
+      "title": "Retro Groove",
+      "artist": "Vintage Band",
+      "duration": 180,
+      "file_path": "retro_groove.mp3",
+      "plays": 0
+    },
+    "local_003": {
+      "title": "Smooth Vibes",
+      "artist": "Chill Collective",
+      "duration": 195,
+      "file_path": "smooth_vibes.mp3",
+      "plays": 0
+    }
+  }
+}
