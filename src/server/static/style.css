@@ -1,4 +1,4 @@
-/* Jukebox-Pi-Money - Estilos */
+/* Jukebox-Pi-Money - Retro Jukebox Estilos */
 
 * {
     margin: 0;
@@ -6,12 +6,76 @@
     box-sizing: border-box;
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Righteous&family=Bebas+Neue&family=Audiowide&display=swap');
+
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Righteous', 'Bebas Neue', cursive;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(255, 0, 0, 0.1), transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(0, 0, 255, 0.1), transparent 50%),
+        linear-gradient(180deg, #1a0000 0%, #4d0000 50%, #1a0000 100%);
     color: #fff;
     overflow: hidden;
     height: 100vh;
+    position: relative;
+}
+
+/* Retro Jukebox Frame Effect */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(90deg, transparent 48%, rgba(255, 215, 0, 0.3) 50%, transparent 52%),
+        linear-gradient(0deg, transparent 48%, rgba(255, 215, 0, 0.3) 50%, transparent 52%);
+    background-size: 100% 100%;
+    pointer-events: none;
+    z-index: 9999;
+    border: 20px solid;
+    border-image: linear-gradient(
+        135deg,
+        #d4af37 0%,
+        #f9f295 25%,
+        #d4af37 50%,
+        #aa771c 75%,
+        #d4af37 100%
+    ) 1;
+    box-shadow: 
+        inset 0 0 30px rgba(255, 215, 0, 0.3),
+        inset 0 0 60px rgba(0, 0, 0, 0.5),
+        0 0 50px rgba(255, 215, 0, 0.2);
+}
+
+/* Animated neon glow effect */
+@keyframes neonGlow {
+    0%, 100% {
+        text-shadow: 
+            0 0 10px #fff,
+            0 0 20px #fff,
+            0 0 30px #ff00ff,
+            0 0 40px #ff00ff,
+            0 0 70px #ff00ff,
+            0 0 80px #ff00ff,
+            0 0 100px #ff00ff;
+    }
+    50% {
+        text-shadow: 
+            0 0 5px #fff,
+            0 0 10px #fff,
+            0 0 15px #ff00ff,
+            0 0 20px #ff00ff,
+            0 0 35px #ff00ff,
+            0 0 40px #ff00ff,
+            0 0 50px #ff00ff;
+    }
+}
+
+@keyframes vinylSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 /* Telas */
@@ -19,8 +83,10 @@ body {
     display: none;
     flex-direction: column;
     height: 100vh;
-    padding: 20px;
-    animation: fadeIn 0.3s ease-in;
+    padding: 40px;
+    animation: fadeIn 0.5s ease-in, screenSlide 0.5s ease-out;
+    position: relative;
+    z-index: 1;
 }
 
 .screen.active {
@@ -30,34 +96,98 @@ body {
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(30px) scale(0.95);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
     }
 }
 
-/* Header */
+@keyframes screenSlide {
+    from {
+        clip-path: circle(0% at 50% 50%);
+    }
+    to {
+        clip-path: circle(150% at 50% 50%);
+    }
+}
+
+/* Header - Retro Jukebox Style */
 .header {
     text-align: center;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    margin-bottom: 20px;
+    padding: 30px;
+    background: 
+        linear-gradient(135deg, 
+            rgba(212, 175, 55, 0.3) 0%,
+            rgba(255, 215, 0, 0.2) 50%,
+            rgba(212, 175, 55, 0.3) 100%
+        );
+    border-radius: 25px;
+    margin-bottom: 30px;
     backdrop-filter: blur(10px);
+    border: 4px solid #d4af37;
+    box-shadow: 
+        0 0 30px rgba(255, 215, 0, 0.5),
+        inset 0 0 20px rgba(255, 215, 0, 0.2),
+        0 10px 40px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: 
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 10px,
+            rgba(255, 215, 0, 0.05) 10px,
+            rgba(255, 215, 0, 0.05) 20px
+        );
+    animation: shine 20s linear infinite;
+}
+
+@keyframes shine {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 .header h1 {
-    font-size: 3em;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    font-size: 4em;
+    font-family: 'Audiowide', cursive;
+    background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8))
+            drop-shadow(0 0 40px rgba(255, 215, 0, 0.6))
+            drop-shadow(0 4px 10px rgba(0, 0, 0, 0.8));
+    animation: neonGlow 2s ease-in-out infinite;
+    position: relative;
+    z-index: 1;
+    letter-spacing: 5px;
 }
 
 .balance {
-    font-size: 1.5em;
+    font-size: 2em;
     font-weight: bold;
-    margin-top: 10px;
-    color: #ffd700;
+    margin-top: 15px;
+    color: #00ff00;
+    text-shadow: 
+        0 0 10px #00ff00,
+        0 0 20px #00ff00,
+        0 0 30px #00ff00,
+        0 2px 5px rgba(0, 0, 0, 0.8);
+    font-family: 'Bebas Neue', cursive;
+    letter-spacing: 3px;
+    position: relative;
+    z-index: 1;
 }
 
 /* Content */
@@ -81,107 +211,246 @@ body {
     font-size: 2em;
 }
 
-/* Métodos de Pagamento */
+/* Métodos de Pagamento - Retro Vinyl Record Style */
 .payment-methods {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    max-width: 800px;
+    gap: 30px;
+    max-width: 900px;
     margin: 0 auto;
 }
 
 .payment-method {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 30px;
-    border-radius: 15px;
+    background: 
+        radial-gradient(circle at center, rgba(20, 20, 20, 0.9) 0%, rgba(40, 10, 10, 0.9) 100%);
+    padding: 40px;
+    border-radius: 50%;
     cursor: pointer;
-    transition: all 0.3s ease;
-    border: 3px solid transparent;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    border: 5px solid #d4af37;
     backdrop-filter: blur(10px);
+    position: relative;
+    aspect-ratio: 1;
+    box-shadow: 
+        0 10px 40px rgba(0, 0, 0, 0.7),
+        inset 0 0 30px rgba(255, 215, 0, 0.1),
+        0 0 20px rgba(255, 215, 0, 0.3);
+    overflow: hidden;
+}
+
+.payment-method::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30%;
+    height: 30%;
+    background: radial-gradient(circle, #1a1a1a, #000);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 
+        0 0 0 2px #d4af37,
+        inset 0 2px 5px rgba(0, 0, 0, 0.8);
+}
+
+.payment-method::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        rgba(255, 215, 0, 0.05) 0.5deg,
+        transparent 1deg
+    );
+    border-radius: 50%;
+    opacity: 0.6;
 }
 
 .payment-method:hover {
-    transform: scale(1.05);
-    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.15) rotate(5deg);
     border-color: #ffd700;
+    box-shadow: 
+        0 15px 60px rgba(255, 215, 0, 0.6),
+        inset 0 0 40px rgba(255, 215, 0, 0.3),
+        0 0 40px rgba(255, 215, 0, 0.8);
+    animation: vinylSpin 2s linear infinite;
 }
 
 .payment-method .icon {
-    font-size: 4em;
-    margin-bottom: 10px;
+    font-size: 5em;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 2;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
 }
 
 .payment-method .name {
-    font-size: 1.5em;
+    font-size: 1.8em;
     font-weight: bold;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    font-family: 'Bebas Neue', cursive;
+    letter-spacing: 2px;
+    position: relative;
+    z-index: 2;
+    text-shadow: 
+        0 0 10px rgba(255, 215, 0, 0.8),
+        0 2px 5px rgba(0, 0, 0, 0.8);
 }
 
 .payment-method .price {
-    font-size: 2em;
-    color: #ffd700;
+    font-size: 2.5em;
+    color: #00ff00;
+    font-family: 'Audiowide', cursive;
+    position: relative;
+    z-index: 2;
+    text-shadow: 
+        0 0 15px #00ff00,
+        0 0 25px #00ff00,
+        0 2px 5px rgba(0, 0, 0, 0.8);
 }
 
-/* Busca de Música */
+/* Busca de Música - Retro Console Style */
 .search-box {
     display: flex;
-    gap: 10px;
-    margin-bottom: 30px;
-    max-width: 800px;
+    gap: 15px;
+    margin-bottom: 40px;
+    max-width: 900px;
     margin-left: auto;
     margin-right: auto;
 }
 
 .search-box input {
     flex: 1;
-    padding: 20px;
-    font-size: 1.3em;
+    padding: 25px;
+    font-size: 1.5em;
     border: none;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.9);
-    color: #333;
+    border-radius: 15px;
+    background: 
+        linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(40, 40, 40, 0.9) 100%);
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    border: 3px solid #d4af37;
+    box-shadow: 
+        0 0 20px rgba(255, 215, 0, 0.3),
+        inset 0 0 20px rgba(0, 0, 0, 0.8);
+    text-shadow: 0 0 5px #00ff00;
+}
+
+.search-box input::placeholder {
+    color: rgba(0, 255, 0, 0.4);
 }
 
 .search-box input:focus {
-    outline: 3px solid #ffd700;
+    outline: none;
+    border-color: #ffd700;
+    box-shadow: 
+        0 0 30px rgba(255, 215, 0, 0.6),
+        inset 0 0 20px rgba(0, 0, 0, 0.8);
+    animation: inputPulse 1.5s ease-in-out infinite;
 }
 
-/* Resultados de Busca */
+@keyframes inputPulse {
+    0%, 100% {
+        box-shadow: 
+            0 0 30px rgba(255, 215, 0, 0.6),
+            inset 0 0 20px rgba(0, 0, 0, 0.8);
+    }
+    50% {
+        box-shadow: 
+            0 0 40px rgba(255, 215, 0, 0.8),
+            inset 0 0 25px rgba(0, 0, 0, 0.9);
+    }
+}
+
+/* Resultados de Busca - Retro Jukebox Selection Style */
 .search-results {
-    max-width: 800px;
-    margin: 0 auto 30px;
+    max-width: 900px;
+    margin: 0 auto 40px;
 }
 
 .search-result {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 15px;
+    background: 
+        linear-gradient(90deg, 
+            rgba(212, 175, 55, 0.2) 0%,
+            rgba(40, 10, 10, 0.8) 5%,
+            rgba(40, 10, 10, 0.9) 95%,
+            rgba(212, 175, 55, 0.2) 100%
+        );
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     backdrop-filter: blur(10px);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    border: 3px solid rgba(212, 175, 55, 0.4);
+    box-shadow: 
+        0 5px 20px rgba(0, 0, 0, 0.5),
+        inset 0 0 20px rgba(255, 215, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.search-result::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background: linear-gradient(180deg, #ffd700, #ff00ff, #00ffff, #ffd700);
+    background-size: 100% 400%;
+    animation: colorFlow 3s linear infinite;
+}
+
+@keyframes colorFlow {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 0% 100%; }
 }
 
 .search-result:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateX(5px);
+    background: 
+        linear-gradient(90deg, 
+            rgba(255, 215, 0, 0.3) 0%,
+            rgba(60, 20, 20, 0.9) 5%,
+            rgba(60, 20, 20, 1) 95%,
+            rgba(255, 215, 0, 0.3) 100%
+        );
+    transform: translateX(10px) scale(1.02);
+    border-color: #ffd700;
+    box-shadow: 
+        0 10px 40px rgba(255, 215, 0, 0.4),
+        inset 0 0 30px rgba(255, 215, 0, 0.1);
 }
 
 .search-result .info {
     flex: 1;
+    padding-left: 20px;
 }
 
 .search-result .title {
-    font-size: 1.3em;
+    font-size: 1.5em;
     font-weight: bold;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
+    font-family: 'Bebas Neue', cursive;
+    letter-spacing: 1px;
+    color: #ffd700;
+    text-shadow: 
+        0 0 10px rgba(255, 215, 0, 0.6),
+        0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .search-result .duration {
-    opacity: 0.8;
+    opacity: 0.9;
+    font-size: 1.1em;
+    color: #00ff00;
+    text-shadow: 0 0 5px #00ff00;
 }
 
 /* Fila de Músicas */
@@ -327,49 +596,100 @@ body {
     font-size: 1.1em;
 }
 
-/* Botões */
+/* Botões - Retro Arcade Style */
 .btn-primary,
 .btn-secondary,
 .btn-danger {
-    padding: 20px 40px;
-    font-size: 1.3em;
+    padding: 20px 50px;
+    font-size: 1.5em;
     border: none;
-    border-radius: 10px;
+    border-radius: 15px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     font-weight: bold;
-    margin: 5px;
+    margin: 8px;
+    font-family: 'Bebas Neue', cursive;
+    letter-spacing: 2px;
+    border: 4px solid;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
 }
 
 .btn-primary {
-    background: #4caf50;
-    color: white;
+    background: linear-gradient(135deg, #00ff00, #00cc00);
+    color: #000;
+    border-color: #00ff00;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 
+        0 5px 20px rgba(0, 255, 0, 0.4),
+        inset 0 -3px 10px rgba(0, 0, 0, 0.3);
 }
 
 .btn-primary:hover {
-    background: #45a049;
-    transform: scale(1.05);
+    background: linear-gradient(135deg, #00ffff, #00cccc);
+    border-color: #00ffff;
+    transform: scale(1.1) translateY(-3px);
+    box-shadow: 
+        0 10px 30px rgba(0, 255, 255, 0.6),
+        inset 0 -3px 10px rgba(0, 0, 0, 0.3);
 }
 
 .btn-secondary {
-    background: rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(200, 200, 200, 0.3));
     color: white;
-    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-color: rgba(255, 255, 255, 0.5);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    box-shadow: 
+        0 5px 20px rgba(255, 255, 255, 0.2),
+        inset 0 -3px 10px rgba(0, 0, 0, 0.3);
 }
 
 .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.4);
-    transform: scale(1.05);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(220, 220, 220, 0.5));
+    border-color: rgba(255, 255, 255, 0.8);
+    transform: scale(1.1) translateY(-3px);
+    box-shadow: 
+        0 10px 30px rgba(255, 255, 255, 0.4),
+        inset 0 -3px 10px rgba(0, 0, 0, 0.3);
 }
 
 .btn-danger {
-    background: #f44336;
+    background: linear-gradient(135deg, #ff0000, #cc0000);
     color: white;
+    border-color: #ff0000;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    box-shadow: 
+        0 5px 20px rgba(255, 0, 0, 0.4),
+        inset 0 -3px 10px rgba(0, 0, 0, 0.3);
 }
 
 .btn-danger:hover {
-    background: #da190b;
-    transform: scale(1.05);
+    background: linear-gradient(135deg, #ff3333, #ff0000);
+    border-color: #ff3333;
+    transform: scale(1.1) translateY(-3px);
+    box-shadow: 
+        0 10px 30px rgba(255, 0, 0, 0.6),
+        inset 0 -3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.btn-primary::before,
+.btn-secondary::before,
+.btn-danger::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.btn-primary:hover::before,
+.btn-secondary:hover::before,
+.btn-danger:hover::before {
+    left: 100%;
 }
 
 /* Footer */
@@ -577,13 +897,39 @@ body {
     font-weight: bold;
 }
 
-/* YouTube Player Styles */
+/* YouTube Player Styles - Retro TV Style */
 .youtube-player-container {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 20px;
+    background: 
+        linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(40, 40, 40, 0.9) 100%);
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 30px;
     backdrop-filter: blur(10px);
+    border: 5px solid #d4af37;
+    box-shadow: 
+        0 0 40px rgba(255, 215, 0, 0.4),
+        inset 0 0 30px rgba(0, 0, 0, 0.8),
+        0 10px 50px rgba(0, 0, 0, 0.7);
+    position: relative;
+}
+
+.youtube-player-container::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #ffd700, #ff00ff, #00ffff, #ffd700);
+    background-size: 400% 400%;
+    border-radius: 20px;
+    z-index: -1;
+    animation: borderFlow 4s ease infinite;
+}
+
+@keyframes borderFlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
 #youtube-player {
@@ -591,9 +937,12 @@ body {
     height: 0;
     padding-bottom: 56.25%; /* 16:9 aspect ratio */
     position: relative;
-    border-radius: 10px;
+    border-radius: 15px;
     overflow: hidden;
     background: #000;
+    box-shadow: 
+        inset 0 0 50px rgba(0, 0, 0, 0.9),
+        0 5px 20px rgba(0, 0, 0, 0.5);
 }
 
 #youtube-player iframe {
@@ -603,25 +952,50 @@ body {
     width: 100%;
     height: 100%;
     border: none;
-    border-radius: 10px;
+    border-radius: 15px;
 }
 
 .now-playing-info {
-    margin-top: 15px;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    margin-top: 20px;
+    padding: 20px;
+    background: 
+        linear-gradient(90deg, 
+            rgba(255, 215, 0, 0.1) 0%,
+            rgba(40, 10, 10, 0.8) 10%,
+            rgba(40, 10, 10, 0.8) 90%,
+            rgba(255, 215, 0, 0.1) 100%
+        );
+    border-radius: 15px;
     text-align: center;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    box-shadow: 
+        0 5px 20px rgba(0, 0, 0, 0.5),
+        inset 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
 .now-playing-label {
-    font-size: 0.9em;
-    opacity: 0.8;
-    margin-bottom: 5px;
+    font-size: 1em;
+    opacity: 0.9;
+    margin-bottom: 8px;
+    font-family: 'Courier New', monospace;
+    color: #00ff00;
+    text-shadow: 0 0 10px #00ff00;
+    letter-spacing: 2px;
 }
 
 .now-playing-title {
-    font-size: 1.2em;
+    font-size: 1.5em;
     font-weight: bold;
-    color: #fff;
+    color: #ffd700;
+    font-family: 'Bebas Neue', cursive;
+    letter-spacing: 2px;
+    text-shadow: 
+        0 0 10px rgba(255, 215, 0, 0.8),
+        0 2px 5px rgba(0, 0, 0, 0.8);
+    animation: textPulse 2s ease-in-out infinite;
+}
+
+@keyframes textPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }
