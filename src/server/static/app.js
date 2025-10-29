@@ -656,7 +656,10 @@ async function searchMusic() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ query })
+            body: JSON.stringify({ 
+                query,
+                source: 'auto'  // Busca automaticamente (local primeiro, depois YouTube)
+            })
         });
         
         const data = await response.json();
@@ -674,7 +677,36 @@ async function searchMusic() {
     } catch (error) {
         hideLoading();
         console.error('Erro ao buscar música:', error);
-        showError('Erro ao buscar música: ' + error.message);
+        
+        // Tenta fallback para músicas locais se a conexão com a internet falhar
+        try {
+            const localResponse = await fetch(`${API_BASE}/local/songs`);
+            const localData = await localResponse.json();
+            
+            if (localData.songs && localData.songs.length > 0) {
+                // Filtra músicas locais pela query
+                const filteredSongs = localData.songs.filter(song => 
+                    song.title.toLowerCase().includes(query.toLowerCase()) ||
+                    (song.artist && song.artist.toLowerCase().includes(query.toLowerCase()))
+                );
+                
+                if (filteredSongs.length > 0) {
+                    hideLoading();
+                    displaySearchResult({
+                        video_id: filteredSongs[0].song_id,
+                        title: filteredSongs[0].title,
+                        artist: filteredSongs[0].artist,
+                        duration_text: `${Math.floor(filteredSongs[0].duration / 60)}:${(filteredSongs[0].duration % 60).toString().padStart(2, '0')}`,
+                        source: 'local'
+                    });
+                    return;
+                }
+            }
+        } catch (localError) {
+            console.error('Erro ao buscar músicas locais:', localError);
+        }
+        
+        showError('Erro ao buscar música. Verifique sua conexão com a internet.');
     }
 }
 
@@ -686,10 +718,14 @@ function displaySearchResult(result) {
     resultEl.className = 'search-result';
     resultEl.onclick = () => addMusicToQueue(result);
     
+    // Ícone indica se é música local ou do YouTube
+    const sourceIcon = result.source === 'local' ? '💾' : '🌐';
+    const sourceText = result.source === 'local' ? 'Música Local' : 'YouTube';
+    
     resultEl.innerHTML = `
         <div class="info">
             <div class="title">${result.title}</div>
-            <div class="duration">⏱️ ${result.duration_text || 'Desconhecida'}</div>
+            <div class="duration">⏱️ ${result.duration_text || 'Desconhecida'} ${sourceIcon} ${sourceText}</div>
         </div>
         <button class="btn-primary">➕ Adicionar</button>
     `;

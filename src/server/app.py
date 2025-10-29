@@ -37,6 +37,9 @@ except ImportError:
     IdleMusicManager = None
     # Logger will be configured below, just log a warning after configuration
 
+# Importa módulo de música local
+from src.server.local_music import LocalMusicStorage
+
 # Configuração de logging
 os.makedirs(LogConfig.LOG_FILE.parent, exist_ok=True)
 handler = RotatingFileHandler(
@@ -72,6 +75,7 @@ bill_acceptor = None
 youtube_player = None
 payment_gateway = None
 idle_music_manager = None
+local_music = None
 
 
 def init_hardware():
@@ -116,6 +120,18 @@ def init_payment_gateway():
             logger.info(f"Gateway de pagamento inicializado: {PaymentGatewayConfig.PROVIDER}")
         except Exception as e:
             logger.error(f"Erro ao inicializar gateway: {e}")
+
+
+def init_local_music():
+    """Inicializa sistema de música local"""
+    global local_music
+    
+    try:
+        local_music = LocalMusicStorage()
+        logger.info(f"Local music storage inicializado: {local_music.get_storage_info()}")
+    except Exception as e:
+        logger.error(f"Erro ao inicializar local music storage: {e}")
+        local_music = None
 
 
 def on_cash_received(amount: float):
@@ -375,27 +391,109 @@ def webhook_handler():
 
 @app.route('/api/music/search', methods=['POST'])
 def search_music():
-    """Busca música no YouTube"""
+    """Busca música no YouTube ou armazenamento local"""
     try:
         data = request.json
         query = data.get('query')
+        source = data.get('source', 'auto')  # 'auto', 'youtube', 'local'
         
         if not query:
             return jsonify({"error": "Query não fornecida"}), 400
         
-        # Por enquanto, retorna mock (YouTube player precisa de display)
-        # if youtube_player:
-        #     result = youtube_player.search_and_play(query)
-        #     return jsonify(result)
+        # Se solicitou especificamente local ou auto, busca no armazenamento local primeiro
+        if source in ('auto', 'local') and local_music and local_music.is_available():
+            local_results = local_music.search_songs(query)
+            if local_results:
+                logger.info(f"Encontradas {len(local_results)} músicas locais para: {query}")
+                # Retorna o primeiro resultado local
+                result = local_results[0]
+                return jsonify({
+                    "video_id": result["song_id"],
+                    "title": result["title"],
+                    "artist": result.get("artist", ""),
+                    "duration": result.get("duration", 0),
+                    "duration_text": f"{result.get('duration', 0) // 60}:{result.get('duration', 0) % 60:02d}",
+                    "source": "local",
+                    "file_path": result.get("file_path", "")
+                })
         
-        # Mock para testes sem YouTube
+        # Se não encontrou local ou não estava disponível, busca no YouTube
+        if source in ('auto', 'youtube'):
+            # Tenta buscar no YouTube usando YouTube Data API
+            try:
+                import requests
+                
+                # Usa a YouTube Data API v3 para buscar
+                # Nota: Em produção, use uma API key válida
+                api_key = os.getenv('YOUTUBE_API_KEY', '')
+                
+                if api_key:
+                    search_url = "https://www.googleapis.com/youtube/v3/search"
+                    params = {
+                        'part': 'snippet',
+                        'q': query,
+                        'type': 'video',
+                        'videoCategoryId': '10',  # Categoria de música
+                        'maxResults': 1,
+                        'key': api_key
+                    }
+                    
+                    response = requests.get(search_url, params=params, timeout=5)
+                    
+                    if response.status_code == 200:
+                        results = response.json()
+                        if results.get('items'):
+                            item = results['items'][0]
+                            video_id = item['id']['videoId']
+                            title = item['snippet']['title']
+                            
+                            # Busca duração do vídeo
+                            videos_url = "https://www.googleapis.com/youtube/v3/videos"
+                            video_params = {
+                                'part': 'contentDetails',
+                                'id': video_id,
+                                'key': api_key
+                            }
+                            
+                            video_response = requests.get(videos_url, params=video_params, timeout=5)
+                            duration_text = "Unknown"
+                            
+                            if video_response.status_code == 200:
+                                video_data = video_response.json()
+                                if video_data.get('items'):
+                                    duration_iso = video_data['items'][0]['contentDetails']['duration']
+                                    # Parse ISO 8601 duration (e.g., PT3M45S)
+                                    import re
+                                    match = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', duration_iso)
+                                    if match:
+                                        hours, minutes, seconds = match.groups()
+                                        hours = int(hours) if hours else 0
+                                        minutes = int(minutes) if minutes else 0
+                                        seconds = int(seconds) if seconds else 0
+                                        
+                                        if hours > 0:
+                                            duration_text = f"{hours}:{minutes:02d}:{seconds:02d}"
+                                        else:
+                                            duration_text = f"{minutes}:{seconds:02d}"
+                            
+                            return jsonify({
+                                "video_id": video_id,
+                                "title": title,
+                                "duration_text": duration_text,
+                                "source": "youtube"
+                            })
+            except Exception as e:
+                logger.warning(f"Erro ao buscar no YouTube: {e}")
+        
+        # Fallback: retorna mock para demonstração
         import hashlib
         video_id = hashlib.md5(query.encode()).hexdigest()[:11]
         
         return jsonify({
             "video_id": video_id,
             "title": query,
-            "duration_text": "3:45"
+            "duration_text": "3:45",
+            "source": "youtube"
         })
         
     except Exception as e:
@@ -689,6 +787,83 @@ def trigger_idle_music():
         return safe_error_response("Erro ao tocar música idle", 500)
 
 
+
+@app.route('/api/local/songs')
+def list_local_songs():
+    """Lista todas as músicas locais disponíveis"""
+    try:
+        if not local_music or not local_music.is_available():
+            return jsonify({
+                "error": "Armazenamento local não disponível",
+                "songs": []
+            }), 503
+        
+        songs = local_music.list_all_songs()
+        return jsonify({
+            "songs": songs,
+            "total": len(songs),
+            "storage_info": local_music.get_storage_info()
+        })
+    except Exception as e:
+        logger.error(f"Erro ao listar músicas locais: {e}")
+        return safe_error_response("Erro ao listar músicas locais", 500)
+
+
+@app.route('/api/local/songs/<song_id>')
+def get_local_song(song_id):
+    """Retorna informações de uma música local específica"""
+    try:
+        if not local_music or not local_music.is_available():
+            return jsonify({"error": "Armazenamento local não disponível"}), 503
+        
+        song = local_music.get_song(song_id)
+        if not song:
+            return jsonify({"error": "Música não encontrada"}), 404
+        
+        return jsonify(song)
+    except Exception as e:
+        logger.error(f"Erro ao obter música local: {e}")
+        return safe_error_response("Erro ao obter música local", 500)
+
+
+@app.route('/api/local/songs/<song_id>/file')
+def serve_local_song(song_id):
+    """Serve o arquivo de áudio de uma música local"""
+    try:
+        if not local_music or not local_music.is_available():
+            return jsonify({"error": "Armazenamento local não disponível"}), 503
+        
+        file_path = local_music.get_file_path(song_id)
+        if not file_path:
+            return jsonify({"error": "Arquivo de música não encontrado"}), 404
+        
+        # Incrementa contador de reproduções
+        local_music.increment_play_count(song_id)
+        
+        from flask import send_file
+        return send_file(file_path, mimetype='audio/mpeg')
+    except Exception as e:
+        logger.error(f"Erro ao servir arquivo de música: {e}")
+        return safe_error_response("Erro ao servir arquivo de música", 500)
+
+
+@app.route('/api/local/storage-info')
+def get_storage_info():
+    """Retorna informações sobre o armazenamento local"""
+    try:
+        if not local_music:
+            return jsonify({
+                "is_available": False,
+                "total_songs": 0,
+                "storage_path": "N/A"
+            })
+        
+        return jsonify(local_music.get_storage_info())
+    except Exception as e:
+        logger.error(f"Erro ao obter informações de armazenamento: {e}")
+        return safe_error_response("Erro ao obter informações de armazenamento", 500)
+
+
 # ===== INICIALIZAÇÃO =====
 
 def initialize_app():
@@ -697,8 +872,10 @@ def initialize_app():
     
     init_hardware()
     init_payment_gateway()
+    init_local_music()
     
     logger.info("Jukebox inicializado com sucesso!")
+
 
 
 # ===== MAIN =====
