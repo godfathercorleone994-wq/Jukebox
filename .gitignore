@@ -66,6 +66,7 @@ dist/
 # === INSTALLERS ===
 installers/
 debian/
+# Note: releases/ folder is NOT ignored - it contains official release builds
 
 # === ANDROID ===
 android/app/build/
