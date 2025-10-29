@@ -218,6 +218,20 @@ Disponível:
 
 📲 **Instale no seu celular Android!**
 
+#### 📥 Opção A: Baixar APK Pré-compilado (Recomendado)
+
+**APK gerado automaticamente via GitHub Actions CI:**
+
+1. Acesse a aba [**Actions**](../../actions/workflows/build-android-apk.yml) deste repositório
+2. Clique na execução mais recente do workflow **"Build Android APK"**
+3. Role até o final da página em **Artifacts**
+4. Baixe o arquivo **jukebox-android-apk**
+5. Transfira para seu celular e instale
+
+✨ **Vantagem**: Não precisa compilar nada, basta baixar e instalar!
+
+#### 🔨 Opção B: Compilar Localmente
+
 Compilar o APK do Jukebox para Android:
 
 ```bash
@@ -231,14 +245,14 @@ cd Jukebox
 # O APK estará em: android/app/build/outputs/apk/release/app-release-unsigned.apk
 ```
 
-Como usar:
+#### 📱 Como usar o app:
 - ✅ **WebView nativo** - Acessa a interface web do Jukebox
 - ✅ **Conecta ao servidor** - Configure a URL do servidor Flask
 - ✅ **Funciona offline** - Se o servidor estiver na rede local
 - ✅ **Interface touchscreen** otimizada para celular
 - ✅ **Fácil instalação** - Transferir APK e instalar
 
-Configuração:
+#### ⚙️ Configuração:
 - Por padrão, conecta em `http://localhost:5000`
 - Edite `MainActivity.java` para mudar a URL padrão
 - Ideal para usar com servidor na rede local ou remoto

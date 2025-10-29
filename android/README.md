@@ -1,10 +1,31 @@
 # 📱 Jukebox Android APK
 
-Este guia explica como compilar e instalar o aplicativo Android do Jukebox no seu celular.
+Este guia explica como obter e instalar o aplicativo Android do Jukebox no seu celular.
 
-## 📋 Pré-requisitos
+## 📥 Baixar APK Pré-compilado (Recomendado)
 
-Para compilar o APK, você precisará de:
+**🎉 Novo: APK gerado automaticamente via GitHub Actions CI!**
+
+Não precisa compilar nada - o APK é gerado automaticamente:
+
+1. Acesse a aba [**Actions**](../../../actions/workflows/build-android-apk.yml) do repositório
+2. Clique na execução mais recente do workflow **"Build Android APK"** com status ✅
+3. Role até **Artifacts** no final da página
+4. Baixe o arquivo **jukebox-android-apk** (arquivo .zip)
+5. Extraia o APK do arquivo zip
+6. Transfira o APK para seu celular e instale
+
+✨ **Vantagens:**
+- ✅ Não precisa instalar Java ou Android SDK
+- ✅ APK sempre atualizado com o código mais recente
+- ✅ Build reproduzível e confiável
+- ✅ Disponível para download imediato
+
+## 🔨 Compilar APK Localmente
+
+### 📋 Pré-requisitos
+
+Para compilar o APK localmente, você precisará de:
 
 1. **JDK (Java Development Kit) 11 ou superior**
    ```bash

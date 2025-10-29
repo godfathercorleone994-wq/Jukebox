@@ -1,0 +1,108 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'android/**'
+      - '.github/workflows/build-android-apk.yml'
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      - 'android/**'
+      - '.github/workflows/build-android-apk.yml'
+  workflow_dispatch:
+    inputs:
+      upload_to_release:
+        description: 'Upload APK to latest release'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build-apk:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+        cache: 'gradle'
+    
+    - name: Grant execute permission for gradlew
+      run: chmod +x android/gradlew
+    
+    - name: Build Release APK
+      run: |
+        cd android
+        ./gradlew assembleRelease --no-daemon
+    
+    - name: Sign APK (if keystore is available)
+      if: false  # Disabled by default - enable when keystore is configured
+      run: |
+        # To enable signing:
+        # 1. Create a keystore: keytool -genkey -v -keystore jukebox.keystore -alias jukebox -keyalg RSA -keysize 2048 -validity 10000
+        # 2. Add secrets to GitHub: KEYSTORE_FILE (base64), KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD
+        # 3. Set 'if: true' above
+        echo "${{ secrets.KEYSTORE_FILE }}" | base64 -d > android/app/jukebox.keystore
+        cd android
+        ./gradlew assembleRelease \
+          -Pandroid.injected.signing.store.file=$PWD/app/jukebox.keystore \
+          -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
+          -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
+          -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
+    
+    - name: Rename APK
+      run: |
+        cd android/app/build/outputs/apk/release
+        if [ -f "app-release-unsigned.apk" ]; then
+          mv app-release-unsigned.apk jukebox-app-release.apk
+        elif [ -f "app-release.apk" ]; then
+          mv app-release.apk jukebox-app-release.apk
+        fi
+        ls -lh
+    
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: jukebox-android-apk
+        path: android/app/build/outputs/apk/release/jukebox-app-release.apk
+        retention-days: 30
+    
+    - name: Build Summary
+      run: |
+        echo "## 📱 Android APK Build Successful! ✅" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📦 Download" >> $GITHUB_STEP_SUMMARY
+        echo "O APK foi gerado com sucesso e está disponível como artefato desta execução." >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📥 Como baixar:" >> $GITHUB_STEP_SUMMARY
+        echo "1. Vá para a aba **Actions** deste repositório" >> $GITHUB_STEP_SUMMARY
+        echo "2. Clique nesta execução do workflow" >> $GITHUB_STEP_SUMMARY
+        echo "3. Role até **Artifacts** no final da página" >> $GITHUB_STEP_SUMMARY
+        echo "4. Baixe o arquivo **jukebox-android-apk**" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📲 Como instalar:" >> $GITHUB_STEP_SUMMARY
+        echo "1. Transfira o APK para seu celular Android" >> $GITHUB_STEP_SUMMARY
+        echo "2. Permita instalação de fontes desconhecidas (Configurações → Segurança)" >> $GITHUB_STEP_SUMMARY
+        echo "3. Abra o APK e instale" >> $GITHUB_STEP_SUMMARY
+        echo "4. Configure o endereço do servidor Jukebox no app" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### ℹ️ Informações" >> $GITHUB_STEP_SUMMARY
+        cd android/app/build/outputs/apk/release
+        APK_SIZE=$(du -h jukebox-app-release.apk | cut -f1)
+        echo "- **Tamanho do APK:** $APK_SIZE" >> $GITHUB_STEP_SUMMARY
+        echo "- **Tipo:** Release (não assinado)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Retenção:** 30 dias" >> $GITHUB_STEP_SUMMARY
