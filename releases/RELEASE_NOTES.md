@@ -1,6 +1,6 @@
 # 🎵 Jukebox Pi Money - Release v2.3.0
 
-Data: 29 de Outubro de 2025
+Data: 29 de Outubro de 2024
 
 ## 📦 Arquivos Disponíveis
 
@@ -111,7 +111,7 @@ Nenhum problema conhecido nesta versão.
 
 ## 🔄 Changelog
 
-### v2.3.0 (2025-10-29)
+### v2.3.0 (2024-10-29)
 - ✅ Build profissional com PyInstaller
 - ✅ Instalador Debian (.deb) completo
 - ✅ Sistema de código de operador
