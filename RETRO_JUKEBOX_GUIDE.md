@@ -217,12 +217,40 @@ POST /api/music/search
 
 ## 🚀 Como Usar
 
+### Variáveis de Ambiente
+
+O sistema usa duas variáveis de ambiente diferentes para controlar funcionalidades do YouTube:
+
+1. **YOUTUBE_ENABLED** (true/false): Controla o player Selenium antigo (backend)
+   - `false` = Usa YouTube IFrame Player no frontend (recomendado)
+   - `true` = Usa Selenium WebDriver no backend (requer display)
+
+2. **YOUTUBE_API_KEY** (string): API key para busca de músicas
+   - Se configurada = Busca real usando YouTube Data API v3
+   - Se vazia = Usa mock/fallback para demonstração
+
 ### Iniciar o Servidor
 
+**Configuração Recomendada (sem Selenium, com API real):**
 ```bash
 cd /path/to/Jukebox
-export YOUTUBE_ENABLED=false  # Não precisa do Selenium
-export YOUTUBE_API_KEY=sua-api-key  # Opcional para busca real no YouTube
+export YOUTUBE_ENABLED=false        # Não usa Selenium
+export YOUTUBE_API_KEY=sua-api-key  # Busca real no YouTube
+python3 -m src.server.app
+```
+
+**Configuração para Testes (sem API key):**
+```bash
+cd /path/to/Jukebox
+export YOUTUBE_ENABLED=false  # Não usa Selenium
+# YOUTUBE_API_KEY não configurada = usa mock
+python3 -m src.server.app
+```
+
+**Configuração Legacy (com Selenium):**
+```bash
+cd /path/to/Jukebox
+export YOUTUBE_ENABLED=true  # Usa Selenium (requer display)
 python3 -m src.server.app
 ```
 
