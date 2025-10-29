@@ -61,9 +61,15 @@ Sistema embarcado de Jukebox com aceitador de notas e YouTube Music para Raspber
 **✨ Novo!** Instaladores profissionais com configuração automática:
 
 #### Linux - Instalador Debian (.deb)
+
+**Download Rápido - Disponível Agora:**
 ```bash
-# Baixar do GitHub Releases
-wget https://github.com/godfathercorleone994-wq/Jukebox/releases/latest/download/jukebox-pi-money_2.3.0_amd64.deb
+# Opção 1: Download direto do repositório (RECOMENDADO)
+wget https://raw.githubusercontent.com/godfathercorleone994-wq/Jukebox/main/releases/jukebox-pi-money_2.3.0_amd64.deb
+
+# Opção 2: Clone o repositório
+git clone https://github.com/godfathercorleone994-wq/Jukebox.git
+cd Jukebox/releases
 
 # Instalar
 sudo dpkg -i jukebox-pi-money_2.3.0_amd64.deb
@@ -74,6 +80,8 @@ sudo nano /etc/jukebox/.env
 # Executar
 jukebox
 ```
+
+**📦 Veja todos os arquivos disponíveis**: [releases/](releases/)
 
 #### Windows - Instalador (.exe)
 ```

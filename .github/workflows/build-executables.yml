@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'
+      - 'Jukebox_py_v*'
   workflow_dispatch:
 
 jobs:
