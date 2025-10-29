@@ -24,23 +24,19 @@ O workflow é acionado automaticamente nos seguintes casos:
 
 ### Passo a Passo:
 
-1. Acesse: https://github.com/godfathercorleone994-wq/Jukebox/actions/workflows/build-android-apk.yml
+1. Acesse a aba **Actions** do repositório no GitHub
 
-2. Clique na execução mais recente com ✅ (sucesso)
+2. Clique no workflow **"Build Android APK"**
 
-3. Role até o final da página até a seção **"Artifacts"**
+3. Clique na execução mais recente com ✅ (sucesso)
 
-4. Clique em **"jukebox-android-apk"** para baixar (arquivo ZIP)
+4. Role até o final da página até a seção **"Artifacts"**
 
-5. Extraia o APK do arquivo ZIP
+5. Clique em **"jukebox-android-apk"** para baixar (arquivo ZIP)
 
-6. Transfira para seu celular Android e instale
+6. Extraia o APK do arquivo ZIP
 
-### Via URL Direta:
-
-```
-https://github.com/godfathercorleone994-wq/Jukebox/actions/workflows/build-android-apk.yml
-```
+7. Transfira para seu celular Android e instale
 
 ## 🔧 Tecnologias Utilizadas
 
@@ -117,12 +113,13 @@ O workflow inclui suporte para assinatura de APK, mas está desabilitado por pad
 
 ## 🔄 Executar Manualmente
 
-1. Acesse: https://github.com/godfathercorleone994-wq/Jukebox/actions/workflows/build-android-apk.yml
-2. Clique em **"Run workflow"**
-3. Selecione a branch (geralmente main)
-4. Clique em **"Run workflow"** verde
-5. Aguarde a conclusão (~3-5 minutos)
-6. Baixe o APK dos artefatos
+1. Acesse a aba **Actions** do repositório no GitHub
+2. Clique no workflow **"Build Android APK"**
+3. Clique em **"Run workflow"**
+4. Selecione a branch (geralmente main)
+5. Clique em **"Run workflow"** verde
+6. Aguarde a conclusão (~3-5 minutos)
+7. Baixe o APK dos artefatos
 
 ## 📖 Documentação Relacionada
 
@@ -141,9 +138,8 @@ O workflow inclui suporte para assinatura de APK, mas está desabilitado por pad
 
 ## 🆘 Suporte
 
-- 🐛 Issues: https://github.com/godfathercorleone994-wq/Jukebox/issues
-- 📧 Email: godfathercorleone994@gmail.com
-- 📖 Docs: https://github.com/godfathercorleone994-wq/Jukebox
+- 🐛 Issues: Aba "Issues" do repositório no GitHub
+- 📖 Docs: Consulte a documentação completa no repositório
 
 ---
 
