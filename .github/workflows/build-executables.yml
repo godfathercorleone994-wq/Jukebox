@@ -56,9 +56,11 @@ jobs:
           QUICKSTART_EXECUTABLE.md
           INSTALLER.md
   
-- name: Build Windows Executable
-  run: ./build-windows.bat
-  shell: cmd
+  build-windows:
+    name: Build Windows Executable and Installer
+    runs-on: windows-latest
+    permissions:
+      contents: read
     
     steps:
     - name: Checkout code
@@ -76,6 +78,7 @@ jobs:
     - name: Build Windows executable
       run: |
         build-windows.bat
+      shell: cmd
     
     - name: Create zip
       run: |
@@ -83,10 +86,12 @@ jobs:
         Compress-Archive -Path jukebox.exe -DestinationPath ../jukebox-windows-x64.zip
         cd ..
         Copy-Item env.example dist/
+      shell: powershell
     
     - name: Build Windows installer
       run: |
         & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer-windows.iss
+      shell: powershell
     
     - name: Upload Windows artifacts
       uses: actions/upload-artifact@v4
